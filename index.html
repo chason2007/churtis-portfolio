@@ -105,10 +105,11 @@
          Removed from the DOM entirely in flat mode. -->
     <canvas class="stage" id="stage" aria-hidden="true"></canvas>
 
-    <!-- ── Persistent chrome ─────────────────────────────────────────────────
-         TODO (step 4): the quick nav lives here — a fixed top bar that gets a
-         recruiter to any project in two clicks. Deliberately absent until then
-         rather than shipped as an empty <header> landmark. -->
+    <!-- ── Quick nav ─────────────────────────────────────────────────────────
+         A fixed rail of ticks down the right edge, one per section. Filled
+         from content/site.ts by ui/Nav.ts — every project is one click away
+         from anywhere on the page. -->
+    <nav class="rail" id="rail" aria-label="Sections"></nav>
 
     <!-- ── Content ───────────────────────────────────────────────────────────
          Real HTML text, overlaid on the canvas. No body copy is ever rendered

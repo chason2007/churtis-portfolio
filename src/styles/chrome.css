@@ -74,6 +74,14 @@
   }
 }
 
+/* The cue has done its job once the first scroll has happened. `data-at-top`
+   is written by the scroll driver. */
+html[data-at-top='false'] .cue {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-mid) var(--ease-out-expo);
+}
+
 /* ── Reduced motion ─────────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

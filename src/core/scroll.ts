@@ -19,10 +19,18 @@ import Lenis from 'lenis';
 export interface ScrollState {
   /** Path parameter, 0-1. Feed straight to the camera curves. */
   t: number;
-  /** Index of the zone the camera is closest to. */
+  /** Index of the zone the camera has most recently passed. */
   index: number;
   /** 0-1 between zone `index` and the next one. */
   frac: number;
+  /**
+   * Index of the *nearest* zone — `index` rounded by `frac`.
+   *
+   * This, not `index`, is what "the section you are looking at" means: anchors
+   * are section centres, so halfway between two of them the next one is already
+   * filling the viewport. The nav and the `data-zone` attribute use it.
+   */
+  nearest: number;
   /** Raw document progress, 0-1. */
   progress: number;
   /** Pixels per second, signed. Used for motion-reactive effects. */
@@ -39,7 +47,7 @@ export interface ScrollDriverOptions {
 }
 
 export class ScrollDriver {
-  readonly state: ScrollState = { t: 0, index: 0, frac: 0, progress: 0, velocity: 0 };
+  readonly state: ScrollState = { t: 0, index: 0, frac: 0, nearest: 0, progress: 0, velocity: 0 };
 
   private readonly sections: HTMLElement[];
   private readonly listeners = new Set<ScrollListener>();
@@ -184,6 +192,7 @@ export class ScrollDriver {
     this.state.t = n >= 2 ? (index + frac) / (n - 1) : 0;
     this.state.index = index;
     this.state.frac = frac;
+    this.state.nearest = Math.min(index + (frac >= 0.5 ? 1 : 0), Math.max(n - 1, 0));
     this.state.progress = Math.min(Math.max(scroll / scrollable, 0), 1);
     this.state.velocity = delta > 0 ? (scroll - this.lastScroll) / delta : 0;
     this.lastScroll = scroll;

@@ -1,0 +1,181 @@
+/*
+ * The quick nav rail.
+ *
+ * A column of ticks pinned to the right edge, one per section. At rest it is
+ * almost nothing — six hairlines. Hovering the rail, or focusing anything in
+ * it, slides the labels in from the right.
+ *
+ * On narrow screens it becomes a horizontal row along the bottom, where it
+ * replaces the location/scroll chrome rather than competing with it.
+ */
+
+.rail {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: var(--z-chrome);
+  transform: translateY(-50%);
+  padding: var(--space-m) var(--gutter) var(--space-m) var(--space-m);
+}
+
+.rail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rail__link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  /* A generous hit area around a 1px tick — the target has to be clickable
+     without being visible. */
+  padding: 0.45rem 0;
+  color: var(--c-ink-dim);
+  transition: color var(--dur-fast) var(--ease-out-expo);
+}
+
+/* ── Labels ─────────────────────────────────────────────────────────────────── */
+
+.rail__label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55em;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* Hidden visually, never removed: still focusable, still announced. */
+  opacity: 0;
+  transform: translateX(6px);
+  transition:
+    opacity var(--dur-mid) var(--ease-out-expo),
+    transform var(--dur-mid) var(--ease-out-expo);
+}
+
+.rail__index {
+  color: var(--c-accent-lift);
+  letter-spacing: var(--track-label);
+}
+
+/* Reveal every label when the rail is engaged, so it reads as one list rather
+   than a series of disconnected tooltips. */
+.rail:hover .rail__label,
+.rail:focus-within .rail__label,
+.rail__link[aria-current] .rail__label {
+  opacity: 1;
+  transform: none;
+}
+
+.rail__link:hover,
+.rail__link:focus-visible {
+  color: var(--c-ink);
+}
+
+.rail__link[aria-current] {
+  color: var(--c-ink);
+}
+
+/* ── Ticks ──────────────────────────────────────────────────────────────────── */
+
+.rail__tick {
+  width: 1.1rem;
+  height: 1px;
+  background: var(--c-line-strong);
+  transition:
+    width var(--dur-mid) var(--ease-out-expo),
+    background-color var(--dur-fast) var(--ease-out-expo);
+}
+
+.rail__link:hover .rail__tick,
+.rail__link:focus-visible .rail__tick {
+  width: 1.75rem;
+  background: var(--c-ink);
+}
+
+.rail__link[aria-current] .rail__tick {
+  width: 2.25rem;
+  background: var(--c-accent);
+  box-shadow: 0 0 10px 0 var(--c-accent-glow);
+}
+
+/* Stagger the labels so the rail unfurls rather than snapping on. */
+.rail__item:nth-child(1) .rail__label { transition-delay: 0ms; }
+.rail__item:nth-child(2) .rail__label { transition-delay: 25ms; }
+.rail__item:nth-child(3) .rail__label { transition-delay: 50ms; }
+.rail__item:nth-child(4) .rail__label { transition-delay: 75ms; }
+.rail__item:nth-child(5) .rail__label { transition-delay: 100ms; }
+.rail__item:nth-child(n + 6) .rail__label { transition-delay: 125ms; }
+
+/* ── Narrow screens ───────────────────────────────────────────────────────────
+   The rail moves to the bottom and lays out horizontally. Labels stay hidden
+   (there is no hover on touch), so projects show their index number instead —
+   which is why the index is a separate span. */
+
+@media (max-width: 60rem) {
+  .rail {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    padding: var(--space-s) var(--gutter) calc(var(--space-s) + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, var(--c-bg) 55%);
+  }
+
+  .rail__list {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .rail__link {
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .rail__label {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Only the index survives — the full titles would never fit. */
+  .rail__label > *:not(.rail__index) {
+    display: none;
+  }
+
+  /* Sections without an index keep their word; it is short enough. */
+  .rail__link:not([data-kind='project']) .rail__label > * {
+    display: inline;
+    font-size: 0.5625rem;
+  }
+
+  .rail__tick {
+    width: 1.1rem;
+  }
+
+  .rail__link[aria-current] .rail__tick,
+  .rail__link:hover .rail__tick {
+    width: 1.1rem;
+  }
+
+  .rail__link[aria-current] .rail__tick {
+    background: var(--c-accent);
+  }
+
+  /* The rail owns the bottom edge now. */
+  .chrome--bottom {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail__label,
+  .rail__tick {
+    transition: none;
+  }
+}

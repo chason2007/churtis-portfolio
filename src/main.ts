@@ -1,11 +1,12 @@
 import './styles/main.css';
 
-import { buildOutline } from './content/outline';
+import { buildOutline, type OutlineEntry } from './content/outline';
 import { detectCapabilities, type Capabilities } from './core/capabilities';
 import { ScrollDriver } from './core/scroll';
 import { applyContent } from './ui/content';
 import { Hero } from './ui/Hero';
 import { Loader } from './ui/Loader';
+import { Nav } from './ui/Nav';
 import { Sections } from './ui/Sections';
 import { maybe } from './ui/dom';
 
@@ -42,7 +43,15 @@ async function boot(): Promise<void> {
   // The opening is a timed sequence; starting it half way down the page because
   // the browser restored a scroll position would ruin it.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+  // Strip the fragment before anything else. The sections it points at are
+  // created by JS, and Chrome re-applies its scroll-to-fragment when the target
+  // finally appears — which lands on top of our own jump and doubles the offset.
+  // The hash is put back once we have scrolled there ourselves.
   const entryHash = window.location.hash.slice(1);
+  if (entryHash) {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
   window.scrollTo(0, 0);
 
   const loader = new Loader();
@@ -76,13 +85,21 @@ async function boot(): Promise<void> {
 
   const hero = new Hero({ reducedMotion: capabilities.reducedMotion });
 
-  const finish = async (scroll: ScrollDriver | null): Promise<void> => {
+  const finish = async (scroll: ScrollDriver): Promise<void> => {
+    // The nav needs the scroll driver to move the page, so it is wired here
+    // rather than at render time.
+    wireNav(outline, scroll, html);
+
     await loader.finish();
     html.dataset.boot = 'ready';
 
     // The document is now its full height and the overflow lock is off.
-    scroll?.refresh();
-    if (entryHash) scroll?.scrollTo(entryHash, { immediate: true });
+    scroll.refresh();
+
+    if (entryHash) {
+      scroll.scrollTo(entryHash, { immediate: true });
+      history.replaceState(null, '', `#${entryHash}`);
+    }
   };
 
   if (!capabilities.use3D) {
@@ -103,7 +120,29 @@ async function boot(): Promise<void> {
   }
 }
 
-type Finish = (scroll: ScrollDriver | null) => Promise<void>;
+type Finish = (scroll: ScrollDriver) => Promise<void>;
+
+/**
+ * Mount the quick nav and keep it in step with the scroll position.
+ *
+ * Also publishes the active section onto the root element, which is how the
+ * CSS knows to retire the scroll cue once the hero is behind us.
+ */
+function wireNav(outline: OutlineEntry[], scroll: ScrollDriver, html: HTMLElement): void {
+  const nav = new Nav({
+    outline,
+    onNavigate: (id) => scroll.scrollTo(id),
+  });
+  nav.mount();
+
+  scroll.on((state) => {
+    const entry = outline[state.nearest];
+    if (!entry) return;
+    nav.setActive(entry.id);
+    html.dataset.zone = entry.id;
+    html.dataset.atTop = state.nearest === 0 ? 'true' : 'false';
+  });
+}
 
 /** The 2D path: no canvas, no Three.js, native scrolling, same content. */
 async function bootFlat(hero: Hero, sections: HTMLElement[], finish: Finish): Promise<void> {

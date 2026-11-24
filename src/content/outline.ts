@@ -42,7 +42,7 @@ export function laneFor(index: number): number {
 
 export function buildOutline(): OutlineEntry[] {
   const stops: Array<Omit<OutlineEntry, 'textSide'>> = [
-    { id: 'hero', kind: 'hero', navLabel: 'Top', inNav: false },
+    { id: 'hero', kind: 'hero', navLabel: 'Top', inNav: true },
     { id: 'about', kind: 'about', navLabel: 'About', inNav: true },
     ...site.projects.map((project) => ({
       id: project.id,
