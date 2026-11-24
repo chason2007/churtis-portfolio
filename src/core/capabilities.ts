@@ -21,6 +21,8 @@ export interface RenderBudget {
   nameParticles: number;
   /** Instances in the ambient dust field. */
   dustParticles: number;
+  /** Instances in each zone structure along the camera path. */
+  zoneParticles: number;
   /** Hard cap on devicePixelRatio — the single biggest fill-rate lever. */
   maxPixelRatio: number;
   /** Enable the UnrealBloom pass. */
@@ -85,6 +87,7 @@ const BUDGETS: Record<Exclude<Tier, 'none'>, RenderBudget> = {
   high: {
     nameParticles: 16000,
     dustParticles: 2600,
+    zoneParticles: 7000,
     maxPixelRatio: 2,
     bloom: true,
     bloomDivisor: 2,
@@ -94,6 +97,7 @@ const BUDGETS: Record<Exclude<Tier, 'none'>, RenderBudget> = {
   medium: {
     nameParticles: 11000,
     dustParticles: 1200,
+    zoneParticles: 4200,
     maxPixelRatio: 1.5,
     bloom: true,
     bloomDivisor: 3,
@@ -103,6 +107,7 @@ const BUDGETS: Record<Exclude<Tier, 'none'>, RenderBudget> = {
   low: {
     nameParticles: 6500,
     dustParticles: 500,
+    zoneParticles: 2000,
     maxPixelRatio: 1,
     bloom: false,
     bloomDivisor: 4,
@@ -114,6 +119,7 @@ const BUDGETS: Record<Exclude<Tier, 'none'>, RenderBudget> = {
 const NO_BUDGET: RenderBudget = {
   nameParticles: 0,
   dustParticles: 0,
+  zoneParticles: 0,
   maxPixelRatio: 1,
   bloom: false,
   bloomDivisor: 4,

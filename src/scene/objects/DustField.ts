@@ -12,8 +12,9 @@ import type { Theme } from '../../content/theme';
  * Deliberately dim and heavily defocused — if you can pick out individual motes
  * it is too strong.
  *
- * Positions wrap inside the volume in the shader, so the camera can travel
- * through it indefinitely (step 3) without re-seeding anything on the CPU.
+ * The field tiles infinitely around the camera (see the shader), so the camera
+ * can fly the whole path without leaving the haze and without a single position
+ * being recomputed on the CPU.
  */
 
 export interface DustFieldOptions {
@@ -45,9 +46,9 @@ export class DustField {
       const o = i * 3;
       offsets[o] = (Math.random() * 2 - 1) * volume.x;
       offsets[o + 1] = (Math.random() * 2 - 1) * volume.y;
-      // Bias depth towards the camera so near motes (which carry the parallax)
-      // are not swamped by the far ones.
-      offsets[o + 2] = -Math.pow(Math.random(), 1.6) * volume.z;
+      // Uniform in Z: the shader tiles the volume around the camera, so any
+      // bias here would travel with it and read as a moving clump.
+      offsets[o + 2] = (Math.random() * 2 - 1) * volume.z;
 
       seeds[o] = 0.25 + Math.random() * 0.75; // brightness
       seeds[o + 1] = Math.random();           // size / fall speed
@@ -66,6 +67,7 @@ export class DustField {
         uFocus: { value: 9 },
         uAperture: { value: 1.35 },
         uVolume: { value: volume.clone() },
+        uOrigin: { value: new THREE.Vector3() },
         uOpacity: { value: opacity },
         uPointer: { value: new THREE.Vector2() },
         uColor: { value: new THREE.Color(theme.inkDim) },
@@ -93,10 +95,11 @@ export class DustField {
     this.material.uniforms.uOpacity.value = value;
   }
 
-  update(elapsed: number, pointerX: number, pointerY: number): void {
+  update(elapsed: number, pointerX: number, pointerY: number, origin: THREE.Vector3): void {
     const u = this.material.uniforms;
     u.uTime.value = elapsed;
     (u.uPointer.value as THREE.Vector2).set(pointerX, pointerY);
+    (u.uOrigin.value as THREE.Vector3).copy(origin);
   }
 
   dispose(): void {

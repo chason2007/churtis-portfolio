@@ -142,12 +142,15 @@ export class NameField {
     this.material.uniforms.uProgress.value = value;
   }
 
-  /** 0 = present, 1 = blown apart. Driven by scroll in step 3. */
+  /** 0 = present, 1 = blown apart. Driven by the scroll position. */
   get dissolve(): number {
     return this.material.uniforms.uDissolve.value as number;
   }
   set dissolve(value: number) {
     this.material.uniforms.uDissolve.value = value;
+    // Fully dissolved means fully transparent — stop submitting the draw call
+    // for the rest of the page rather than blending 16k invisible sprites.
+    this.object.visible = value < 0.999;
   }
 
   /** Per-particle brightness. Lower = grainier, higher = more solid. */

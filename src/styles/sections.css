@@ -1,0 +1,434 @@
+/*
+ * Content panels — About, the project zones, Skills and Contact.
+ *
+ * Each panel is a full viewport tall and holds a single narrow column of copy,
+ * offset to one side. The side comes from `data-side`, which the camera path
+ * sets: the copy always sits opposite the structure the camera is flying
+ * towards, so the two never fight for the same part of the frame.
+ *
+ * Everything here is ordinary document flow over a fixed canvas. The panels do
+ * not know the scene exists.
+ */
+
+.panel {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-content: center;
+  gap: 0 var(--space-m);
+  padding: var(--space-xl) var(--gutter);
+}
+
+/* An invisible extra anchor (the hero's "View Work" target). */
+.anchor {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.panel__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-s);
+  max-width: 46ch;
+}
+
+.panel[data-side='left'] .panel__body {
+  grid-column: 2 / span 5;
+}
+
+.panel[data-side='right'] .panel__body {
+  grid-column: 7 / span 5;
+}
+
+/* ── Shared type ────────────────────────────────────────────────────────────── */
+
+.panel__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9em;
+  margin-bottom: var(--space-xs);
+}
+
+/* A short accent rule leading into every section label. */
+.panel__eyebrow::before {
+  content: '';
+  width: 1.75rem;
+  height: 1px;
+  background: var(--c-accent);
+  flex: none;
+}
+
+.panel__index {
+  color: var(--c-accent-lift);
+  letter-spacing: var(--track-label);
+}
+
+.panel__role {
+  color: var(--c-ink-dim);
+}
+
+.panel__title {
+  font-size: var(--t-h2);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: var(--track-display);
+  color: var(--c-ink);
+}
+
+.panel__subtitle {
+  font-size: var(--t-h3);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--c-ink-mute);
+}
+
+.panel__lead {
+  margin-top: var(--space-xs);
+  font-size: var(--t-lead);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--c-ink-mute);
+}
+
+.panel__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  color: var(--c-ink-mute);
+}
+
+.panel__note {
+  font-size: var(--t-small);
+  color: var(--c-ink-dim);
+}
+
+/* ── Details disclosure ─────────────────────────────────────────────────────── */
+
+.details {
+  width: 100%;
+  margin-top: var(--space-xs);
+}
+
+.details__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 0.5rem 0;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-ink-mute);
+  transition: color var(--dur-fast) var(--ease-out-expo);
+}
+
+.details__toggle:hover,
+.details__toggle:focus-visible {
+  color: var(--c-ink);
+}
+
+/* A plus that rotates into a minus. Two pseudo-elements, no icon font. */
+.details__sign {
+  position: relative;
+  width: 0.65rem;
+  height: 0.65rem;
+}
+
+.details__sign::before,
+.details__sign::after {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 1px;
+  background: var(--c-accent);
+  transition: transform var(--dur-mid) var(--ease-out-expo);
+}
+
+.details__sign::after {
+  transform: rotate(90deg);
+}
+
+.details__toggle[aria-expanded='true'] .details__sign::after {
+  transform: rotate(0deg);
+}
+
+/* `display: flex` beats the UA stylesheet's `[hidden] { display: none }`, so the
+   hidden state has to be restated explicitly or the panel is never closed. */
+.details__panel[hidden] {
+  display: none;
+}
+
+.details__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding: var(--space-s) 0 var(--space-xs);
+  border-top: 1px solid var(--c-line);
+  color: var(--c-ink-mute);
+  font-size: var(--t-small);
+}
+
+.highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.highlights li {
+  position: relative;
+  padding-left: 1.4rem;
+  line-height: 1.5;
+}
+
+/* A short accent dash instead of a bullet. */
+.highlights li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 0.75rem;
+  height: 1px;
+  background: var(--c-accent);
+}
+
+/* ── Stack chips ────────────────────────────────────────────────────────────── */
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: var(--space-xs);
+}
+
+.stack__item {
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--c-line);
+  border-radius: 2px;
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-ink-dim);
+}
+
+/* ── Links ──────────────────────────────────────────────────────────────────── */
+
+.panel__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-m);
+  margin-top: var(--space-s);
+}
+
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding-bottom: 2px;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+
+/* Underline that wipes in from the left on hover. */
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--c-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-mid) var(--ease-out-expo);
+}
+
+.link:hover::after,
+.link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.link__arrow {
+  transition: transform var(--dur-mid) var(--ease-out-expo);
+}
+
+.link:hover .link__arrow,
+.link:focus-visible .link__arrow {
+  transform: translate(2px, -2px);
+}
+
+/* ── Skills ─────────────────────────────────────────────────────────────────── */
+
+.panel--skills .panel__body {
+  max-width: 54ch;
+}
+
+.skills {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: var(--space-s);
+}
+
+.skills__group {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 1fr) 3fr;
+  gap: var(--space-m);
+  padding: var(--space-s) 0;
+  border-top: 1px solid var(--c-line);
+}
+
+.skills__group:last-child {
+  border-bottom: 1px solid var(--c-line);
+}
+
+.skills__label {
+  padding-top: 0.25em;
+  color: var(--c-accent-lift);
+}
+
+.skills__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  color: var(--c-ink);
+  font-size: var(--t-small);
+}
+
+/* ── Contact ────────────────────────────────────────────────────────────────── */
+
+/* Doubled class to out-weigh `.panel[data-side] .panel__body` above, which is
+   three class-level selectors. Contact is the one panel that ignores the
+   alternating layout and centres instead — it is the close. */
+.panel.panel--contact .panel__body {
+  /* Offset one column right of true centre: the funnel arrives from the left
+     and this keeps the availability line clear of its mouth. */
+  grid-column: 4 / span 9;
+  align-items: center;
+  max-width: 46ch;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.panel--contact .panel__eyebrow::before {
+  display: none;
+}
+
+.contact__email {
+  position: relative;
+  align-self: center;
+  margin-top: var(--space-s);
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 2.3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--c-ink);
+  /* Keep the address on one line; it is the single most important string on
+     the page and a mid-word break reads as a layout bug. */
+  white-space: nowrap;
+}
+
+.contact__email::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.1em;
+  height: 1px;
+  background: var(--c-line-strong);
+  transform: scaleX(0.999);
+  transform-origin: center;
+  transition:
+    background-color var(--dur-fast) var(--ease-out-expo),
+    transform var(--dur-mid) var(--ease-out-expo);
+}
+
+.contact__email:hover::after,
+.contact__email:focus-visible::after {
+  background: var(--c-accent);
+}
+
+.panel--contact .panel__links {
+  justify-content: center;
+}
+
+/* ── Entrance ───────────────────────────────────────────────────────────────────
+   Driven by an IntersectionObserver that adds `is-inview`. Children stagger via
+   transition-delay rather than a JS timeline — it costs nothing and cannot
+   desync from the scroll. */
+
+html[data-anim='on'] .panel__body > * {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 760ms var(--ease-out-expo),
+    transform 900ms var(--ease-out-expo);
+}
+
+html[data-anim='on'] .panel.is-inview .panel__body > * {
+  opacity: 1;
+  transform: none;
+}
+
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(1) { transition-delay: 0ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(2) { transition-delay: 70ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(3) { transition-delay: 140ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(4) { transition-delay: 210ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(5) { transition-delay: 280ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(n + 6) { transition-delay: 350ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-anim='on'] .panel__body > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Narrow viewports ───────────────────────────────────────────────────────────
+   Below the point where a 5-column offset column still reads, every panel
+   becomes a single full-width column. */
+
+@media (max-width: 60rem) {
+  .panel {
+    grid-template-columns: 1fr;
+    padding-block: calc(var(--space-xl) * 1.1);
+  }
+
+  .panel[data-side='left'] .panel__body,
+  .panel[data-side='right'] .panel__body,
+  .panel.panel--contact .panel__body {
+    grid-column: 1;
+  }
+
+  .panel.panel--contact .panel__body {
+    align-items: flex-start;
+    margin: 0;
+    text-align: left;
+  }
+
+  /* Narrow screens cannot hold the address on one line at the display size. */
+  .contact__email {
+    align-self: flex-start;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .panel--contact .panel__links {
+    justify-content: flex-start;
+  }
+
+  .skills__group {
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+  }
+}

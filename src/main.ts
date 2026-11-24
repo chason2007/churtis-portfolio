@@ -1,9 +1,12 @@
 import './styles/main.css';
 
+import { buildOutline } from './content/outline';
 import { detectCapabilities, type Capabilities } from './core/capabilities';
+import { ScrollDriver } from './core/scroll';
 import { applyContent } from './ui/content';
 import { Hero } from './ui/Hero';
 import { Loader } from './ui/Loader';
+import { Sections } from './ui/Sections';
 import { maybe } from './ui/dom';
 
 /**
@@ -13,7 +16,7 @@ import { maybe } from './ui/dom';
  * job is to decide *what kind of site this visitor gets* before anything heavy
  * is downloaded, then drive the boot sequence:
  *
- *   capability check → content binding → fonts → [3D chunk] → first frame → reveal
+ *   capability check → content → fonts → [3D chunk] → first frame → reveal
  *
  * Three.js is behind a dynamic import, so a phone, a software rasteriser or a
  * visitor who asked for reduced motion never pays for it.
@@ -22,10 +25,10 @@ import { maybe } from './ui/dom';
 /** Where the loader's progress bar sits at each boot milestone. */
 const STEP = {
   start: 0.06,
-  content: 0.18,
-  fonts: 0.34,
+  content: 0.2,
+  fonts: 0.36,
   chunk: 0.56,
-  scene: 0.82,
+  scene: 0.84,
   frame: 0.97,
 } as const;
 
@@ -35,6 +38,12 @@ async function boot(): Promise<void> {
   // Tells CSS that JS is alive and may hide things it intends to animate in.
   // If the bundle fails to load this never runs and the page stays fully visible.
   html.dataset.anim = 'on';
+
+  // The opening is a timed sequence; starting it half way down the page because
+  // the browser restored a scroll position would ruin it.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  const entryHash = window.location.hash.slice(1);
+  window.scrollTo(0, 0);
 
   const loader = new Loader();
   loader.set(STEP.start, 'Initialising');
@@ -47,7 +56,11 @@ async function boot(): Promise<void> {
     console.info('[boot] capabilities', capabilities);
   }
 
+  // Bind the hero copy, then build every section below it from site.ts.
   applyContent(document);
+  const outline = buildOutline();
+  const sections = new Sections(outline);
+  const sectionElements = sections.render();
   loader.set(STEP.content, 'Loading type');
 
   // Both faces are self-hosted and in the critical CSS, so this is quick — but
@@ -63,13 +76,22 @@ async function boot(): Promise<void> {
 
   const hero = new Hero({ reducedMotion: capabilities.reducedMotion });
 
+  const finish = async (scroll: ScrollDriver | null): Promise<void> => {
+    await loader.finish();
+    html.dataset.boot = 'ready';
+
+    // The document is now its full height and the overflow lock is off.
+    scroll?.refresh();
+    if (entryHash) scroll?.scrollTo(entryHash, { immediate: true });
+  };
+
   if (!capabilities.use3D) {
-    await bootFlat(loader, hero);
+    await bootFlat(hero, sectionElements, finish);
     return;
   }
 
   try {
-    await boot3D(loader, hero, capabilities);
+    await boot3D(loader, hero, capabilities, sectionElements, finish);
   } catch (error) {
     // A WebGL failure must never cost the visitor the content. Fall back to the
     // flat layout and carry on.
@@ -77,23 +99,35 @@ async function boot(): Promise<void> {
     html.dataset.mode = 'flat';
     html.removeAttribute('data-stage');
     maybe('#stage')?.remove();
-    await bootFlat(loader, hero);
+    await bootFlat(hero, sectionElements, finish);
   }
 }
 
-/** The 2D path: no canvas, no Three.js, same content. */
-async function bootFlat(loader: Loader, hero: Hero): Promise<void> {
+type Finish = (scroll: ScrollDriver | null) => Promise<void>;
+
+/** The 2D path: no canvas, no Three.js, native scrolling, same content. */
+async function bootFlat(hero: Hero, sections: HTMLElement[], finish: Finish): Promise<void> {
   // Nothing will ever draw into it, so take it out of the DOM rather than
   // leaving an empty compositing layer behind.
   maybe('#stage')?.remove();
 
-  await loader.finish();
-  document.documentElement.dataset.boot = 'ready';
+  // Still worth running: the nav rail reads `index` from it for its active
+  // state. Smooth scrolling is off — the browser's own is the right behaviour
+  // here, and is what a reduced-motion visitor asked for.
+  const scroll = new ScrollDriver({ sections, smooth: false });
+
+  await finish(scroll);
   hero.reveal();
 }
 
 /** The 3D path. */
-async function boot3D(loader: Loader, hero: Hero, capabilities: Capabilities): Promise<void> {
+async function boot3D(
+  loader: Loader,
+  hero: Hero,
+  capabilities: Capabilities,
+  sections: HTMLElement[],
+  finish: Finish,
+): Promise<void> {
   const canvas = maybe<HTMLCanvasElement>('#stage');
   if (!canvas) throw new Error('[boot] #stage canvas is missing from the markup');
 
@@ -103,7 +137,7 @@ async function boot3D(loader: Loader, hero: Hero, capabilities: Capabilities): P
   const { Experience } = await import('./scene/Experience');
 
   // Resolved by the Experience the moment a frame has actually reached the
-  // screen — which is the only honest definition of "loaded" for a 3D scene.
+  // screen — the only honest definition of "loaded" for a 3D scene.
   let onFirstFrame: () => void = () => undefined;
   const firstFrame = new Promise<void>((resolve) => {
     onFirstFrame = resolve;
@@ -124,14 +158,22 @@ async function boot3D(loader: Loader, hero: Hero, capabilities: Capabilities): P
   await experience.init();
   loader.set(STEP.scene, 'Lighting the scene');
 
+  // Scroll drives the camera. Both run off the Experience's ticker so the whole
+  // app still has exactly one requestAnimationFrame loop.
+  const scroll = new ScrollDriver({ sections, smooth: true });
+  scroll.on((state) => experience.setScroll(state.t));
+  experience.ticker.add((delta) => {
+    scroll.raf(performance.now());
+    scroll.update(delta);
+  });
+
   experience.start();
   await firstFrame;
 
   loader.set(STEP.frame);
   document.documentElement.dataset.stage = 'ready';
 
-  await loader.finish();
-  document.documentElement.dataset.boot = 'ready';
+  await finish(scroll);
 
   // The signature moment. The hero copy is nested into the scene's timeline so
   // the type arrives as the letterforms settle, not before.
@@ -140,7 +182,7 @@ async function boot3D(loader: Loader, hero: Hero, capabilities: Capabilities): P
 
   if (import.meta.env.DEV) {
     // Handy for tuning: `window.__experience.playIntro()` replays the reveal.
-    Object.assign(window, { __experience: experience });
+    Object.assign(window, { __experience: experience, __scroll: scroll });
   }
 }
 

@@ -6,7 +6,9 @@ import { CameraRig } from './CameraRig';
 import { createRenderer } from './renderer';
 import { DustField } from './objects/DustField';
 import { NameField } from './objects/NameField';
+import { ZoneField } from './objects/ZoneField';
 import { ensureFont } from './objects/textSampler';
+import { buildPath, buildZones, HERO_DISTANCE, type CameraPath } from './path';
 import { Disposer } from '../core/dispose';
 import { Pointer } from '../core/pointer';
 import { Ticker } from '../core/ticker';
@@ -22,7 +24,8 @@ import type { Capabilities } from '../core/capabilities';
  * resource. Lazily imported from `main.ts`, so devices that take the 2D layout
  * never download Three.js at all.
  *
- * Lifecycle: `new Experience()` -> `await init()` -> `start()` -> `playIntro()`.
+ * Lifecycle: `new Experience()` -> `await init()` -> `start()` -> `playIntro()`,
+ * with `setScroll(t)` driving the camera along the path thereafter.
  * `dispose()` releases everything, including the GL context.
  */
 
@@ -43,8 +46,6 @@ export interface ExperienceOptions {
 const NAME_WORLD_WIDTH = 11.5;
 /** How much world width stays in frame: the wordmark plus breathing room. */
 const FRAME_WORLD_WIDTH = NAME_WORLD_WIDTH * 1.32;
-/** Resting camera distance from the wordmark plane. */
-const HERO_DISTANCE = 9;
 /** Extra distance the camera starts back at, for the push-in on reveal. */
 const INTRO_PUSH = 4.2;
 
@@ -60,8 +61,21 @@ const BLOOM_FLASH = 1.9;
 const DISPLAY_FONT = 'Archivo';
 const DISPLAY_WEIGHT = 800;
 
+/**
+ * How much of the gap to the next zone a structure stays visible across.
+ * Below 1 the zones never overlap; above it they cross-fade. 0.9 gives a brief
+ * moment where the outgoing zone is still dissolving as the next assembles.
+ */
+const ZONE_WINDOW = 0.9;
+
+/** Share of the first path segment over which the wordmark blows apart. */
+const HERO_EXIT = 0.55;
+
 export class Experience {
   readonly scene = new THREE.Scene();
+  readonly ticker: Ticker;
+  readonly viewport: Viewport;
+  readonly pointer: Pointer;
 
   private readonly disposer = new Disposer();
   private readonly capabilities: Capabilities;
@@ -70,28 +84,45 @@ export class Experience {
   private readonly onFraming?: (ratio: number) => void;
 
   private renderer!: THREE.WebGLRenderer;
-  private viewport!: Viewport;
   private rig!: CameraRig;
   private composer!: Composer;
-  private pointer!: Pointer;
-  private ticker!: Ticker;
   private nameField!: NameField;
   private dustField!: DustField;
+  private path!: CameraPath;
+  private zoneFields: ZoneField[] = [];
 
   private firstFrameSent = false;
 
+  /** Position on the camera path, 0-1. Written by the scroll driver. */
+  private scrollT = 0;
+
+  /**
+   * Intro push-in, applied as an *offset* on top of the path position rather
+   * than by writing the dolly directly — otherwise the per-frame path update
+   * would fight the intro tween for the same property.
+   */
+  private readonly introOffset = new THREE.Vector3(0, 0, INTRO_PUSH);
+
   /**
    * Lens state, tweened by the intro and read every frame. Kept on the instance
-   * rather than inside the timeline so the render loop stays the single place
-   * that pushes focus into the shaders.
+   * so the render loop stays the single place that pushes focus into shaders.
    */
   private lens = { aperture: APERTURE_SHARP };
+
+  private readonly pathPoint = new THREE.Vector3();
+  private readonly cameraWorld = new THREE.Vector3();
 
   constructor({ canvas, capabilities, onFirstFrame, onFraming }: ExperienceOptions) {
     this.canvas = canvas;
     this.capabilities = capabilities;
     this.onFirstFrame = onFirstFrame;
     this.onFraming = onFraming;
+
+    // Created eagerly so `main.ts` can hang the scroll driver off the same
+    // loop before the scene finishes building. One rAF for the whole app.
+    this.viewport = this.disposer.add(new Viewport(capabilities.budget.maxPixelRatio));
+    this.pointer = this.disposer.add(new Pointer());
+    this.ticker = this.disposer.add(new Ticker());
   }
 
   async init(): Promise<void> {
@@ -101,10 +132,6 @@ export class Experience {
     // The wordmark is rasterised from the same woff2 the HTML uses, so the face
     // has to be resident before we sample it.
     await ensureFont(DISPLAY_FONT, DISPLAY_WEIGHT);
-
-    this.viewport = this.disposer.add(new Viewport(budget.maxPixelRatio));
-    this.pointer = this.disposer.add(new Pointer());
-    this.ticker = this.disposer.add(new Ticker());
 
     this.scene.background = new THREE.Color(theme.bg);
 
@@ -116,9 +143,10 @@ export class Experience {
       this.renderer.forceContextLoss();
     });
 
+    this.path = buildPath(buildZones());
+
     this.rig = new CameraRig({ size: this.viewport.size });
     this.rig.frameWidth(FRAME_WORLD_WIDTH, HERO_DISTANCE);
-    this.rig.dolly.position.set(0, 0, HERO_DISTANCE + INTRO_PUSH);
     this.scene.add(this.rig.dolly);
 
     this.nameField = this.disposer.add(
@@ -136,12 +164,14 @@ export class Experience {
     this.dustField = this.disposer.add(
       new DustField({
         count: budget.dustParticles,
-        volume: new THREE.Vector3(26, 15, 60),
+        volume: new THREE.Vector3(26, 16, 34),
         opacity: 0.5,
         theme,
       }),
     );
     this.scene.add(this.dustField.object);
+
+    this.buildZoneFields(theme);
 
     this.composer = this.disposer.add(
       new Composer({
@@ -159,10 +189,23 @@ export class Experience {
     this.composer.setBloomStrength(BLOOM_FLASH);
     this.lens.aperture = APERTURE_OPEN;
 
+    // Place the camera before the first frame so nothing is rendered from the
+    // scene's default position.
+    this.applyPath();
+
     this.disposer.add(this.viewport.on(this.onResize));
     this.disposer.add(this.ticker.add(this.onTick));
 
     this.onFraming?.(this.wordmarkHeightRatio());
+  }
+
+  start(): void {
+    this.ticker.start();
+  }
+
+  /** Move the camera along the path. `t` is 0-1, from the scroll driver. */
+  setScroll(t: number): void {
+    this.scrollT = THREE.MathUtils.clamp(t, 0, 1);
   }
 
   /**
@@ -176,10 +219,6 @@ export class Experience {
     const frameHeight =
       2 * HERO_DISTANCE * Math.tan(THREE.MathUtils.degToRad(this.rig.camera.fov) / 2);
     return this.nameField.sample.inkHeight / frameHeight;
-  }
-
-  start(): void {
-    this.ticker.start();
   }
 
   /**
@@ -214,7 +253,7 @@ export class Experience {
         },
         0,
       )
-      .to(this.rig.dolly.position, { z: HERO_DISTANCE, duration: 3.6, ease: 'power2.out' }, 0)
+      .to(this.introOffset, { z: 0, duration: 3.6, ease: 'power2.out' }, 0)
       .to(
         bloom,
         {
@@ -232,10 +271,59 @@ export class Experience {
   }
 
   dispose(): void {
-    gsap.killTweensOf([this.nameField, this.lens]);
-    if (this.rig) gsap.killTweensOf(this.rig.dolly.position);
+    gsap.killTweensOf([this.nameField, this.lens, this.introOffset]);
     this.disposer.run();
     this.scene.clear();
+  }
+
+  /** One instanced field per stop on the path that has a structure. */
+  private buildZoneFields(theme: ReturnType<typeof getTheme>): void {
+    const { budget } = this.capabilities;
+
+    for (const zone of this.path.zones) {
+      if (!zone.shape || !zone.shapePosition) continue;
+
+      const field = this.disposer.add(
+        new ZoneField({
+          kind: zone.shape,
+          count: budget.zoneParticles,
+          scale: zone.shapeScale ?? 3.5,
+          position: zone.shapePosition,
+          theme,
+        }),
+      );
+
+      this.zoneFields.push(field);
+      this.scene.add(field.object);
+    }
+  }
+
+  /** Place the camera and set every zone's reveal from the scroll position. */
+  private applyPath(): void {
+    const t = this.scrollT;
+
+    this.path.position.getPoint(t, this.pathPoint);
+    this.rig.dolly.position.copy(this.pathPoint).add(this.introOffset);
+
+    this.path.target.getPoint(t, this.rig.target);
+
+    // The wordmark blows apart over the first part of the opening segment —
+    // well before the About zone assembles, so the two never overlap.
+    this.nameField.dissolve = THREE.MathUtils.smoothstep(t, 0, this.path.step * HERO_EXIT);
+
+    // Zones fade in and out by proximity in path parameter. Anything far enough
+    // away is set to 0, which takes it out of the render list entirely.
+    const window = this.path.step * ZONE_WINDOW;
+    let fieldIndex = 0;
+
+    for (let i = 0; i < this.path.zones.length; i += 1) {
+      const zone = this.path.zones[i];
+      if (!zone.shape) continue;
+
+      const distance = Math.abs(t - this.path.parameterFor(i)) / window;
+      this.zoneFields[fieldIndex].reveal = 1 - THREE.MathUtils.smoothstep(distance, 0, 1);
+      fieldIndex += 1;
+    }
   }
 
   private onResize = (): void => {
@@ -249,15 +337,24 @@ export class Experience {
 
   private onTick = (delta: number, elapsed: number): void => {
     this.pointer.update(delta);
+    this.applyPath();
     this.rig.update(elapsed, this.pointer.smooth);
 
     // One place writes focus into the shaders, every frame, whatever moved it.
     const focus = this.rig.focusDistance;
-    this.nameField.setFocus(focus, this.lens.aperture);
-    this.dustField.setFocus(focus, this.lens.aperture);
+    const { x, y } = this.pointer.smooth;
 
-    this.nameField.update(elapsed, this.pointer.smooth.x, this.pointer.smooth.y);
-    this.dustField.update(elapsed, this.pointer.smooth.x, this.pointer.smooth.y);
+    this.nameField.setFocus(focus, this.lens.aperture);
+    this.nameField.update(elapsed, x, y);
+
+    this.rig.camera.getWorldPosition(this.cameraWorld);
+    this.dustField.setFocus(focus, this.lens.aperture);
+    this.dustField.update(elapsed, x, y, this.cameraWorld);
+
+    for (const field of this.zoneFields) {
+      field.setFocus(focus, this.lens.aperture);
+      field.update(delta, elapsed, x, y);
+    }
 
     this.composer.render(delta, elapsed);
 

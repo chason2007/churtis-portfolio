@@ -86,6 +86,34 @@ p {
   color: #fff;
 }
 
+/* ── Scrollbar ────────────────────────────────────────────────────────────────
+   The default light scrollbar is a bright stripe down the edge of a near-black
+   page. Styled thin and dark in both the standard and the WebKit syntax so it
+   is handled wherever the browser supports either. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-line-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--c-line-strong);
+  border: 3px solid var(--c-bg);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-ink-dim);
+}
+
 /* ── Focus ────────────────────────────────────────────────────────────────────
    A visible, high-contrast ring on keyboard focus only. Never removed — on a
    dark site the default UA ring is nearly invisible, so it is replaced, not
