@@ -1,9 +1,9 @@
 /*
- * Persistent chrome — the thin bars at the top and bottom of the viewport.
+ * Persistent chrome — the thin bars pinned to the viewport edges.
  *
- * These stay fixed for the whole page. In step 4 the top bar also carries the
- * quick nav (the two-clicks-to-any-project rule); for now it holds the wordmark
- * mark and the availability status.
+ * These stay fixed for the whole page. Only the bottom bar exists so far; the
+ * `--top` modifier returns in step 4 with the quick nav (the
+ * two-clicks-to-any-project rule).
  */
 
 .chrome {
@@ -23,71 +23,8 @@
   pointer-events: auto;
 }
 
-.chrome--top {
-  top: 0;
-}
-
 .chrome--bottom {
   bottom: 0;
-}
-
-/* ── Brand mark ─────────────────────────────────────────────────────────────── */
-
-.mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  font-family: var(--font-display);
-  font-size: var(--t-micro);
-  font-weight: 700;
-  letter-spacing: var(--track-micro);
-  text-transform: uppercase;
-  color: var(--c-ink);
-}
-
-/* The aperture glyph — same lens motif as the favicon and the scene's DOF. */
-.mark__glyph {
-  position: relative;
-  width: 0.7rem;
-  height: 0.7rem;
-  border: 1px solid var(--c-accent);
-  border-radius: 50%;
-}
-
-.mark__glyph::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  background: var(--c-accent);
-  border-radius: 50%;
-  box-shadow: 0 0 10px 1px var(--c-accent-glow);
-}
-
-/* ── Status ─────────────────────────────────────────────────────────────────── */
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.status__dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #3ad29f;
-  box-shadow: 0 0 0 0 rgba(58, 210, 159, 0.5);
-  animation: status-pulse 2.8s var(--ease-in-out) infinite;
-}
-
-@keyframes status-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(58, 210, 159, 0.45);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(58, 210, 159, 0);
-  }
 }
 
 /* ── Scroll cue ─────────────────────────────────────────────────────────────── */
@@ -140,12 +77,8 @@
 /* ── Reduced motion ─────────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .status__dot,
   .cue__line::after {
     animation: none;
-  }
-
-  .cue__line::after {
     transform: none;
     height: 100%;
     opacity: 0.4;
