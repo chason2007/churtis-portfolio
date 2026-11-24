@@ -1,0 +1,238 @@
+/*
+ * Hero.
+ *
+ * The visual centrepiece — the wordmark — is rendered by WebGL at the exact
+ * centre of the viewport. The HTML here frames it: a tracked role label above,
+ * the tagline and calls to action below.
+ *
+ * Positioning is absolute against the viewport centre rather than flowed,
+ * because the copy has to line up with something drawn in a 3D scene. The gap
+ * is computed from `--wordmark-h`, which the scene writes once it knows its
+ * camera framing (see Experience.wordmarkHeightRatio), so the spacing is exact
+ * at any window size instead of being eyeballed.
+ */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: var(--gutter);
+  isolation: isolate;
+}
+
+/* Vertical gap between the wordmark's edge and the copy framing it. */
+.hero {
+  --hero-gap: clamp(1.75rem, 4.5vh, 3.25rem);
+}
+
+/* ── The band above and below the wordmark ──────────────────────────────────── */
+
+.hero__frame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - var(--gutter) * 2, 56rem);
+  text-align: center;
+  pointer-events: none;
+}
+
+.hero__frame > * {
+  pointer-events: auto;
+}
+
+.hero__frame--above {
+  bottom: calc(50% + var(--wordmark-h) / 2 + var(--hero-gap));
+}
+
+.hero__frame--below {
+  top: calc(50% + var(--wordmark-h) / 2 + var(--hero-gap));
+}
+
+/* ── Role ───────────────────────────────────────────────────────────────────── */
+
+.hero__role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85em;
+  font-family: var(--font-body);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-ink-mute);
+}
+
+/* Hairlines either side of the role, drawn with the accent at low opacity. */
+.hero__role::before,
+.hero__role::after {
+  content: '';
+  width: clamp(1.5rem, 6vw, 4.5rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-line-strong));
+}
+
+.hero__role::after {
+  background: linear-gradient(90deg, var(--c-line-strong), transparent);
+}
+
+/* ── Title ──────────────────────────────────────────────────────────────────── */
+
+/*
+ * In 3D mode the <h1> is the accessible and crawlable copy of the wordmark that
+ * the particles draw, so it is visually hidden but never removed. In flat mode
+ * it becomes the real, visible headline.
+ */
+html[data-mode='3d'] .hero__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+html[data-mode='flat'] .hero__title {
+  font-size: var(--t-display);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-display);
+  text-align: center;
+  color: var(--c-ink);
+}
+
+/* ── Tagline ────────────────────────────────────────────────────────────────── */
+
+.hero__tagline {
+  max-width: 44ch;
+  margin: 0 auto;
+  font-size: var(--t-lead);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--c-ink-mute);
+  text-wrap: balance;
+}
+
+/* ── Calls to action ────────────────────────────────────────────────────────── */
+
+.hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: clamp(1.5rem, 3.5vh, 2.5rem);
+}
+
+.cta {
+  --cta-border: var(--c-line-strong);
+  --cta-ink: var(--c-ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--cta-border);
+  border-radius: 2px;
+  color: var(--cta-ink);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  background: rgba(238, 241, 246, 0.015);
+  overflow: hidden;
+  transition:
+    border-color var(--dur-fast) var(--ease-out-expo),
+    color var(--dur-fast) var(--ease-out-expo),
+    background-color var(--dur-fast) var(--ease-out-expo),
+    transform var(--dur-fast) var(--ease-out-expo);
+}
+
+/* A sweep of accent that wipes in from the left on hover. Sits behind the
+   label via z-index rather than opacity so the text stays crisp. */
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, var(--c-accent-glow), transparent 70%);
+  transform: translateX(-101%);
+  transition: transform 520ms var(--ease-out-expo);
+}
+
+.cta:hover::before,
+.cta:focus-visible::before {
+  transform: translateX(0);
+}
+
+.cta:hover,
+.cta:focus-visible {
+  --cta-border: var(--c-accent);
+  --cta-ink: #fff;
+  transform: translateY(-1px);
+}
+
+.cta__arrow {
+  display: inline-block;
+  transition: transform 380ms var(--ease-out-expo);
+}
+
+.cta:hover .cta__arrow,
+.cta:focus-visible .cta__arrow {
+  transform: translateX(3px);
+}
+
+/* The primary action is the only filled element in the hero. */
+.cta--primary {
+  --cta-border: var(--c-accent);
+  background: rgba(61, 109, 255, 0.12);
+}
+
+.cta--primary:hover,
+.cta--primary:focus-visible {
+  background: rgba(61, 109, 255, 0.2);
+  box-shadow: 0 0 0 1px var(--c-accent), 0 8px 30px -12px var(--c-accent-glow);
+}
+
+/* Links still waiting on a real URL (see the TODOs in content/site.ts). */
+.cta[data-placeholder='true'],
+a[data-placeholder='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Entrance ───────────────────────────────────────────────────────────────── */
+
+/*
+ * Reveal elements are hidden only once JS has confirmed it is running
+ * (`data-anim="on"`), so the page degrades to fully visible content if the
+ * bundle fails to load. The animation itself is a GSAP timeline in ui/Hero.ts.
+ */
+html[data-anim='on'] [data-reveal] {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-anim='on'] [data-reveal] {
+    opacity: 1;
+    will-change: auto;
+  }
+}
+
+/* ── Flat mode layout ───────────────────────────────────────────────────────────
+   Without a wordmark in the scene, the hero becomes an ordinary centred stack
+   in normal document flow. Completed in step 5. */
+html[data-mode='flat'] .hero__frame {
+  position: static;
+  transform: none;
+  width: 100%;
+}
+
+html[data-mode='flat'] .hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hero-gap);
+  text-align: center;
+}
