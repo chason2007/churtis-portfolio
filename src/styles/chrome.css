@@ -1,0 +1,161 @@
+/*
+ * Persistent chrome — the thin bars at the top and bottom of the viewport.
+ *
+ * These stay fixed for the whole page. In step 4 the top bar also carries the
+ * quick nav (the two-clicks-to-any-project rule); for now it holds the wordmark
+ * mark and the availability status.
+ */
+
+.chrome {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+  padding: calc(var(--gutter) * 0.75) var(--gutter);
+  pointer-events: none;
+}
+
+.chrome > * {
+  pointer-events: auto;
+}
+
+.chrome--top {
+  top: 0;
+}
+
+.chrome--bottom {
+  bottom: 0;
+}
+
+/* ── Brand mark ─────────────────────────────────────────────────────────────── */
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-display);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+
+/* The aperture glyph — same lens motif as the favicon and the scene's DOF. */
+.mark__glyph {
+  position: relative;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 1px solid var(--c-accent);
+  border-radius: 50%;
+}
+
+.mark__glyph::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: var(--c-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 10px 1px var(--c-accent-glow);
+}
+
+/* ── Status ─────────────────────────────────────────────────────────────────── */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.status__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3ad29f;
+  box-shadow: 0 0 0 0 rgba(58, 210, 159, 0.5);
+  animation: status-pulse 2.8s var(--ease-in-out) infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(58, 210, 159, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(58, 210, 159, 0);
+  }
+}
+
+/* ── Scroll cue ─────────────────────────────────────────────────────────────── */
+
+.cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--c-ink-dim);
+  transition: color var(--dur-fast) var(--ease-out-expo);
+}
+
+.cue:hover,
+.cue:focus-visible {
+  color: var(--c-ink);
+}
+
+/* A hairline with a travelling highlight — reads as "there is more below"
+   without an animated arrow. */
+.cue__line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 2.5rem;
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.cue__line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 45%;
+  background: linear-gradient(180deg, transparent, var(--c-accent));
+  animation: cue-travel 2.4s var(--ease-in-out) infinite;
+}
+
+@keyframes cue-travel {
+  0% {
+    transform: translateY(-110%);
+  }
+  60%,
+  100% {
+    transform: translateY(240%);
+  }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .status__dot,
+  .cue__line::after {
+    animation: none;
+  }
+
+  .cue__line::after {
+    transform: none;
+    height: 100%;
+    opacity: 0.4;
+  }
+}
+
+/* Narrow viewports: drop the lower-left location line rather than let the bars
+   wrap into two rows. */
+@media (max-width: 34rem) {
+  .chrome--bottom .chrome__aside {
+    display: none;
+  }
+}

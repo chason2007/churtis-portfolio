@@ -1,0 +1,213 @@
+<!doctype html>
+<!--
+  Chason Hurtis — portfolio.
+
+  `data-boot="loading"` is set here, in the markup, so the very first painted
+  frame is already locked (no scroll) and the loader is visible without waiting
+  for JavaScript. main.ts replaces it with "ready" when the hand-off happens,
+  and sets data-mode to "3d" or "flat" after the capability check.
+-->
+<html lang="en" data-boot="loading" data-mode="pending">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Chason Hurtis — Full-Stack Software Developer</title>
+    <meta
+      name="description"
+      content="Full-stack software developer in Abu Dhabi. Production web apps end to end — Next.js, TypeScript, Azure, MERN. Background in cinematic web: WebGL, GLSL, canvas."
+    />
+    <meta name="author" content="Chason Hurtis" />
+    <meta name="theme-color" content="#050607" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- TODO: set this to your real deployed origin once the domain is live. -->
+    <link rel="canonical" href="https://chasonhurtis.com/" />
+
+    <!-- Open Graph / Twitter.
+         TODO: add a 1200x630 PNG at public/og.png (a frame of the hero reveal
+         makes a very good share image) and update the absolute URLs above. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Chason Hurtis" />
+    <meta property="og:title" content="Chason Hurtis — Full-Stack Software Developer" />
+    <meta
+      property="og:description"
+      content="Abu Dhabi · UAE Golden Visa holder · building production software end to end."
+    />
+    <meta property="og:url" content="https://chasonhurtis.com/" />
+    <meta property="og:image" content="https://chasonhurtis.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The name Chason Hurtis resolving out of a field of particles." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Chason Hurtis — Full-Stack Software Developer" />
+    <meta
+      name="twitter:description"
+      content="Abu Dhabi · UAE Golden Visa holder · building production software end to end."
+    />
+    <meta name="twitter:image" content="https://chasonhurtis.com/og.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Structured data: gives search engines the role, location and profile
+         links without depending on them executing the page's JavaScript. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Chason Hurtis",
+        "jobTitle": "Full-Stack Software Developer",
+        "email": "mailto:chase.hurtis@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Abu Dhabi",
+          "addressCountry": "AE"
+        },
+        "sameAs": ["https://linkedin.com/in/chasonhurtis-666662328"],
+        "knowsAbout": [
+          "Next.js",
+          "TypeScript",
+          "React",
+          "Node.js",
+          "Microsoft Azure",
+          "MongoDB",
+          "MySQL",
+          "WebGL",
+          "GLSL"
+        ]
+      }
+    </script>
+
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- ── Loading sequence ──────────────────────────────────────────────────
+         In the markup rather than injected, so it paints on frame one. -->
+    <div class="loader" id="loader" data-state="loading" role="status" aria-live="polite">
+      <div class="loader__stage">
+        <p class="loader__status" id="loader-status">Initialising</p>
+      </div>
+      <div>
+        <div class="loader__foot">
+          <span class="loader__mark">Chason Hurtis</span>
+          <span class="loader__count numeric" id="loader-count">00</span>
+        </div>
+        <div class="loader__track">
+          <span class="loader__fill" id="loader-fill"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── The 3D stage ──────────────────────────────────────────────────────
+         Removed from the DOM entirely in flat mode. -->
+    <canvas class="stage" id="stage" aria-hidden="true"></canvas>
+
+    <!-- ── Persistent chrome ─────────────────────────────────────────────────
+         The quick nav joins the top bar in step 4. -->
+    <header class="chrome chrome--top">
+      <a class="mark" href="#hero" aria-label="Chason Hurtis — back to top">
+        <span class="mark__glyph" aria-hidden="true"></span>
+        <span>Chason Hurtis</span>
+      </a>
+      <p class="status label">
+        <span class="status__dot" aria-hidden="true"></span>
+        <span>Available for work</span>
+      </p>
+    </header>
+
+    <!-- ── Content ───────────────────────────────────────────────────────────
+         Real HTML text, overlaid on the canvas. No body copy is ever rendered
+         into a texture. The copy here is kept in sync with content/site.ts,
+         which is the source of truth and warns in dev if the two drift. -->
+    <main class="content" id="main">
+      <section class="hero" id="hero" aria-labelledby="hero-title">
+        <h1 class="hero__title" id="hero-title" data-content="hero.name">CHASON HURTIS</h1>
+
+        <div class="hero__frame hero__frame--above">
+          <p class="hero__role" data-reveal data-reveal-order="0" data-content="hero.role">
+            Full-Stack Software Developer
+          </p>
+        </div>
+
+        <div class="hero__frame hero__frame--below">
+          <p class="hero__tagline" data-reveal data-reveal-order="1" data-content="hero.tagline">
+            Abu Dhabi · UAE Golden Visa holder · building production software end to end.
+          </p>
+
+          <ul class="hero__ctas" data-reveal data-reveal-order="2" id="hero-ctas">
+            <!-- Rendered from site.hero.ctas by ui/Hero.ts. This static copy is
+                 the pre-JS fallback and keeps the markup crawlable. -->
+            <li>
+              <a class="cta cta--primary" href="#work">
+                <span>View Work</span>
+                <span class="cta__arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            </li>
+            <li>
+              <a class="cta" href="/chason-hurtis-resume.pdf">
+                <span>Resume</span>
+                <span class="cta__arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            </li>
+            <li>
+              <a class="cta" href="#contact">
+                <span>Contact</span>
+                <span class="cta__arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- TODO (step 3+): About, project zones, Skills and Contact sections
+           are rendered here from content/site.ts. -->
+    </main>
+
+    <footer class="chrome chrome--bottom">
+      <p class="label chrome__aside">Abu Dhabi &middot; United Arab Emirates</p>
+      <a class="cue label" href="#about" aria-label="Scroll to the next section">
+        <span>Scroll</span>
+        <span class="cue__line" aria-hidden="true"></span>
+      </a>
+    </footer>
+
+    <noscript>
+      <style>
+        .loader,
+        .stage,
+        .cue {
+          display: none !important;
+        }
+        html[data-mode='pending'] .hero__frame {
+          position: static;
+          transform: none;
+        }
+        .hero {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          gap: 2rem;
+        }
+        .hero__title {
+          font-size: var(--t-display);
+          font-weight: 800;
+          line-height: 0.94;
+          position: static !important;
+          width: auto !important;
+          height: auto !important;
+          clip-path: none !important;
+        }
+      </style>
+      <p style="text-align: center; padding: 0 1.5rem; color: #98a2b3">
+        This portfolio uses JavaScript for its 3D presentation, but all of its content is
+        plain HTML. Reach me at
+        <a href="mailto:chase.hurtis@gmail.com" style="color: #8ab6ff">chase.hurtis@gmail.com</a>.
+      </p>
+    </noscript>
+  </body>
+</html>

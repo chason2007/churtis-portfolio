@@ -1,0 +1,138 @@
+/*
+ * Loading sequence.
+ *
+ * Deliberately almost empty: a black frame, one hairline that fills across the
+ * bottom of the viewport, and two lines of micro type in the corners. All the
+ * anticipation comes from the restraint — there is no spinner, no logo
+ * animation, nothing competing with the reveal that follows.
+ *
+ * The markup lives in index.html rather than being injected, so it paints on
+ * the very first frame, before any JavaScript has run.
+ */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loader);
+  background: var(--c-bg);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  /* The loader covers everything, including the hero's own chrome. */
+  pointer-events: all;
+  transition:
+    opacity 760ms var(--ease-out-expo),
+    visibility 760ms linear;
+}
+
+.loader__stage {
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+}
+
+/* The cross-fading status word. Centred, tiny, and tracked wide. */
+.loader__status {
+  font-family: var(--font-body);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-ink-dim);
+  transition: opacity 300ms var(--ease-in-out);
+}
+
+.loader__status[data-swap='out'] {
+  opacity: 0;
+}
+
+.loader__foot {
+  padding: 0 var(--gutter) calc(var(--gutter) * 0.75);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-m);
+}
+
+.loader__mark {
+  font-family: var(--font-display);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+  color: var(--c-ink-mute);
+}
+
+.loader__count {
+  font-family: var(--font-display);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  color: var(--c-ink-mute);
+}
+
+/* The hairline. `transform: scaleX` keeps it on the compositor — no layout
+   thrash on a 60-times-a-second progress update. */
+.loader__track {
+  position: relative;
+  height: 1px;
+  margin: 0 var(--gutter) var(--gutter);
+  background: var(--c-line);
+  overflow: hidden;
+}
+
+.loader__fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--c-accent-sunk), var(--c-accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms var(--ease-out-expo);
+  will-change: transform;
+}
+
+/* A faint bloom travelling with the leading edge of the fill. */
+.loader__fill::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -1px;
+  width: 2px;
+  height: 7px;
+  background: var(--c-accent-lift);
+  box-shadow: 0 0 12px 3px var(--c-accent-glow);
+}
+
+/* ── Exit ────────────────────────────────────────────────────────────────────
+   Three staged beats, driven by data attributes from ui/Loader.ts:
+   `complete` settles the bar, then `leaving` lifts the type and fades the
+   frame, then `done` takes it out of the accessibility tree entirely. */
+
+.loader[data-state='leaving'] .loader__status,
+.loader[data-state='leaving'] .loader__foot {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 380ms var(--ease-out-expo),
+    transform 520ms var(--ease-out-expo);
+}
+
+.loader[data-state='leaving'] .loader__track {
+  opacity: 0;
+  transition: opacity 420ms var(--ease-out-expo) 120ms;
+}
+
+.loader[data-state='done'] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader,
+  .loader__fill,
+  .loader__status,
+  .loader[data-state='leaving'] .loader__status,
+  .loader[data-state='leaving'] .loader__foot,
+  .loader[data-state='leaving'] .loader__track {
+    transition-duration: 1ms;
+  }
+}

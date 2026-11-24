@@ -1,0 +1,14 @@
+/*
+ * Style entry point.
+ *
+ * Load order matters: fonts and tokens first (everything below depends on the
+ * custom properties), then the base layer, then the per-component sheets.
+ * Vite inlines these into one stylesheet at build time.
+ */
+
+@import './fonts.css';
+@import './tokens.css';
+@import './base.css';
+@import './loader.css';
+@import './chrome.css';
+@import './hero.css';

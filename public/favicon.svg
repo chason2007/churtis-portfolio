@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chason Hurtis">
+  <!-- Lens / aperture mark. Echoes the depth-of-field motif in the 3D scene
+       and the glyph in the site's brand mark. -->
+  <rect width="64" height="64" rx="13" fill="#050607"/>
+  <circle cx="32" cy="32" r="17.5" fill="none" stroke="#3d6dff" stroke-width="3"/>
+  <circle cx="32" cy="32" r="6.5" fill="#8ab6ff"/>
+</svg>

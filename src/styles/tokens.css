@@ -1,0 +1,87 @@
+/*
+ * Design tokens — the single source of truth for the palette and the type scale.
+ *
+ * The WebGL scene reads the colour tokens below at boot (see content/theme.ts),
+ * so editing this file recolours the shaders too. There are no hex values
+ * anywhere else in the project.
+ *
+ * Palette logic: a near-black ground, one accent, and a narrow set of inks. The
+ * restraint is the point — the only saturated colour on the page is the accent,
+ * which is why the particle wordmark reads as expensive rather than loud.
+ */
+
+:root {
+  /* ── Ground ─────────────────────────────────────────────────────────────── */
+  --c-bg: #050607;          /* near-black, very slightly cool */
+  --c-bg-raise: #0b0e12;    /* panels, cards */
+  --c-bg-sunk: #020304;     /* the deepest wells */
+
+  /* ── Accent — deep electric blue ────────────────────────────────────────── */
+  --c-accent: #3d6dff;
+  --c-accent-lift: #8ab6ff; /* the bright end of gradients / defocus tint */
+  --c-accent-sunk: #1b3bb0;
+  --c-accent-glow: rgba(61, 109, 255, 0.28);
+
+  /* ── Inks ───────────────────────────────────────────────────────────────── */
+  --c-ink: #eef1f6;         /* primary text, the wordmark core */
+  --c-ink-mute: #98a2b3;    /* body copy on dark */
+  --c-ink-dim: #5a6472;     /* labels, metadata, dust */
+  --c-line: rgba(238, 241, 246, 0.1);
+  --c-line-strong: rgba(238, 241, 246, 0.22);
+
+  /* ── Type ───────────────────────────────────────────────────────────────── */
+  --font-display: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Fluid scale. Each step is clamp(min, preferred, max) so nothing needs a
+     breakpoint to stay in proportion. */
+  --t-display: clamp(2.75rem, 9.4vw, 8.5rem);
+  --t-h2: clamp(1.875rem, 4vw, 3.5rem);
+  --t-h3: clamp(1.125rem, 1.7vw, 1.625rem);
+  --t-lead: clamp(1.0625rem, 1.5vw, 1.375rem);
+  --t-body: clamp(0.9375rem, 1.05vw, 1.0625rem);
+  --t-small: 0.875rem;
+  --t-micro: 0.6875rem;
+
+  --lh-tight: 0.94;
+  --lh-snug: 1.2;
+  --lh-body: 1.62;
+
+  /* All-caps micro labels carry a lot of this design — tracking is tuned once. */
+  --track-micro: 0.16em;
+  --track-label: 0.08em;
+  --track-display: -0.025em;
+
+  /* ── Space ──────────────────────────────────────────────────────────────── */
+  --gutter: clamp(1.25rem, 4.5vw, 4rem);
+  --space-xs: 0.5rem;
+  --space-s: 0.875rem;
+  --space-m: 1.5rem;
+  --space-l: 2.5rem;
+  --space-xl: clamp(3rem, 8vh, 6rem);
+  --measure: 60ch;
+
+  /* ── Motion ─────────────────────────────────────────────────────────────── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 220ms;
+  --dur-mid: 420ms;
+  --dur-slow: 900ms;
+
+  /* ── Layering ───────────────────────────────────────────────────────────── */
+  --z-canvas: 0;
+  --z-content: 10;
+  --z-chrome: 20;
+  --z-loader: 100;
+
+  /*
+   * Height of the particle wordmark as a share of the viewport. Written from
+   * JS once the scene knows its camera framing, and used to position the hero
+   * copy exactly beneath the letterforms instead of guessing. Falls back to a
+   * close-enough value so the layout is never wrong before the scene boots.
+   */
+  --wordmark-h: 11.5vh;
+}
