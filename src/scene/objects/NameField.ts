@@ -37,6 +37,9 @@ export class NameField {
   private readonly geometry: THREE.InstancedBufferGeometry;
   private readonly baseGeometry: THREE.PlaneGeometry;
 
+  /** Instances allocated at construction — the ceiling for setCount(). */
+  private maxCount = 0;
+
   constructor(options: NameFieldOptions) {
     const { lines, fontFamily, fontWeight, count, worldWidth, theme } = options;
 
@@ -61,6 +64,7 @@ export class NameField {
     this.geometry.attributes.position = this.baseGeometry.attributes.position;
     this.geometry.attributes.uv = this.baseGeometry.attributes.uv;
     this.geometry.instanceCount = count;
+    this.maxCount = count;
 
     const origins = new Float32Array(count * 3);
     const seeds = new Float32Array(count * 3);
@@ -151,6 +155,17 @@ export class NameField {
     // Fully dissolved means fully transparent — stop submitting the draw call
     // for the rest of the page rather than blending 16k invisible sprites.
     this.object.visible = value < 0.999;
+  }
+
+  /**
+   * Thin the field at runtime.
+   *
+   * `instanceCount` is just a draw-call parameter, so this costs nothing and
+   * reallocates nothing — the attribute buffers stay exactly as they are and
+   * the GPU simply draws fewer of them.
+   */
+  setCount(count: number): void {
+    this.geometry.instanceCount = Math.max(0, Math.min(count, this.maxCount));
   }
 
   /** Per-particle brightness. Lower = grainier, higher = more solid. */

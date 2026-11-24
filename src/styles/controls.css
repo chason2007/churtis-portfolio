@@ -173,3 +173,35 @@ html[data-cursor='on'] button {
       background-color var(--dur-fast) linear;
   }
 }
+
+/* ── Frame-time readout ───────────────────────────────────────────────────────
+   Only present with `?stats`. Deliberately plain — it is a diagnostic. */
+
+.stats {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 400;
+  margin: var(--space-s);
+  padding: 0.35rem 0.6rem;
+  background: rgba(2, 3, 4, 0.75);
+  border: 1px solid var(--c-line);
+  border-radius: 2px;
+  color: var(--c-ink-mute);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.stats[data-state='good'] {
+  color: #3ad29f;
+}
+
+.stats[data-state='fair'] {
+  color: #e0b341;
+}
+
+.stats[data-state='poor'] {
+  color: #ef6f6f;
+}

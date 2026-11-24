@@ -13,6 +13,7 @@ import { Disposer } from '../core/dispose';
 import { Pointer } from '../core/pointer';
 import { Ticker } from '../core/ticker';
 import { Viewport } from '../core/viewport';
+import { PerfGuard, StatsReadout } from '../core/perf';
 import { getTheme } from '../content/theme';
 import { site } from '../content/site';
 import type { Capabilities } from '../core/capabilities';
@@ -71,6 +72,11 @@ const ZONE_WINDOW = 0.9;
 /** Share of the first path segment over which the wordmark blows apart. */
 const HERO_EXIT = 0.55;
 
+/** Pixel-ratio ceiling after the first quality downgrade. */
+const DEGRADED_PIXEL_RATIO = 1.25;
+/** Share of the original instance count kept after the third downgrade. */
+const DEGRADED_DENSITY = 0.55;
+
 export class Experience {
   readonly scene = new THREE.Scene();
   readonly ticker: Ticker;
@@ -92,6 +98,8 @@ export class Experience {
   private zoneFields: ZoneField[] = [];
 
   private firstFrameSent = false;
+  private readonly perf: PerfGuard;
+  private readonly stats: StatsReadout | null;
 
   /** Position on the camera path, 0-1. Written by the scroll driver. */
   private scrollT = 0;
@@ -123,7 +131,47 @@ export class Experience {
     this.viewport = this.disposer.add(new Viewport(capabilities.budget.maxPixelRatio));
     this.pointer = this.disposer.add(new Pointer());
     this.ticker = this.disposer.add(new Ticker());
+
+    this.perf = new PerfGuard({ onDowngrade: this.onDowngrade });
+
+    // `?stats` prints a frame-time readout. Useful for checking the budget on
+    // a real machine rather than trusting the capability guess.
+    this.stats = new URLSearchParams(window.location.search).has('stats')
+      ? this.disposer.add(new StatsReadout())
+      : null;
   }
+
+  /**
+   * Step quality down when the device cannot hold the frame budget.
+   *
+   * Ordered by how much each buys relative to how much it costs visually:
+   * pixel ratio is by far the biggest fill-rate lever and the least visible on
+   * a soft-edged scene, bloom is the most expensive single pass, and thinning
+   * the fields is last because it is the one change you can actually see.
+   */
+  private onDowngrade = (level: number): void => {
+    switch (level) {
+      case 1:
+        this.viewport.setMaxPixelRatio(Math.min(this.viewport.size.pixelRatio, DEGRADED_PIXEL_RATIO));
+        break;
+      case 2:
+        this.composer.setBloomStrength(0);
+        break;
+      case 3: {
+        const { budget } = this.capabilities;
+        this.nameField.setCount(Math.round(budget.nameParticles * DEGRADED_DENSITY));
+        this.dustField.setCount(Math.round(budget.dustParticles * DEGRADED_DENSITY));
+        for (const field of this.zoneFields) {
+          field.setCount(Math.round(budget.zoneParticles * DEGRADED_DENSITY));
+        }
+        break;
+      }
+      default:
+        break;
+    }
+
+    console.info(`[perf] frame budget missed — quality stepped down to level ${level}`);
+  };
 
   async init(): Promise<void> {
     const theme = getTheme();
@@ -357,6 +405,9 @@ export class Experience {
     }
 
     this.composer.render(delta, elapsed);
+
+    this.perf.sample(delta);
+    this.stats?.update(delta, this.perf, ` · ${this.capabilities.tier}`);
 
     if (!this.firstFrameSent) {
       this.firstFrameSent = true;

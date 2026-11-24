@@ -31,6 +31,9 @@ export class DustField {
   private readonly material: THREE.ShaderMaterial;
   private readonly geometry: THREE.InstancedBufferGeometry;
 
+  /** Instances allocated at construction — the ceiling for setCount(). */
+  private maxCount = 0;
+
   constructor({ count, volume, opacity, theme }: DustFieldOptions) {
     const base = new THREE.PlaneGeometry(1, 1);
     this.geometry = new THREE.InstancedBufferGeometry();
@@ -38,6 +41,7 @@ export class DustField {
     this.geometry.attributes.position = base.attributes.position;
     this.geometry.attributes.uv = base.attributes.uv;
     this.geometry.instanceCount = count;
+    this.maxCount = count;
 
     const offsets = new Float32Array(count * 3);
     const seeds = new Float32Array(count * 3);
@@ -84,6 +88,17 @@ export class DustField {
     this.object.frustumCulled = false;
     this.object.matrixAutoUpdate = false;
     this.object.updateMatrix();
+  }
+
+  /**
+   * Thin the field at runtime.
+   *
+   * `instanceCount` is just a draw-call parameter, so this costs nothing and
+   * reallocates nothing — the attribute buffers stay exactly as they are and
+   * the GPU simply draws fewer of them.
+   */
+  setCount(count: number): void {
+    this.geometry.instanceCount = Math.max(0, Math.min(count, this.maxCount));
   }
 
   setFocus(distance: number, aperture?: number): void {

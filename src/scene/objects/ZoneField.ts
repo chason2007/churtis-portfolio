@@ -34,6 +34,9 @@ export class ZoneField {
   private readonly geometry: THREE.InstancedBufferGeometry;
   private readonly spin: number;
 
+  /** Instances allocated at construction — the ceiling for setCount(). */
+  private maxCount = 0;
+
   private revealValue = 0;
 
   constructor({ kind, count, scale, position, spin = 0.035, theme }: ZoneFieldOptions) {
@@ -47,6 +50,7 @@ export class ZoneField {
     this.geometry.attributes.position = base.attributes.position;
     this.geometry.attributes.uv = base.attributes.uv;
     this.geometry.instanceCount = count;
+    this.maxCount = count;
 
     const seeds = new Float32Array(count * 3);
     for (let i = 0; i < count; i += 1) {
@@ -107,6 +111,17 @@ export class ZoneField {
     this.revealValue = value;
     this.material.uniforms.uReveal.value = value;
     this.object.visible = value > 0.001;
+  }
+
+  /**
+   * Thin the field at runtime.
+   *
+   * `instanceCount` is just a draw-call parameter, so this costs nothing and
+   * reallocates nothing — the attribute buffers stay exactly as they are and
+   * the GPU simply draws fewer of them.
+   */
+  setCount(count: number): void {
+    this.geometry.instanceCount = Math.max(0, Math.min(count, this.maxCount));
   }
 
   setFocus(distance: number, aperture?: number): void {
