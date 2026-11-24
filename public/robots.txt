@@ -1,0 +1,6 @@
+# Everything here is public.
+User-agent: *
+Allow: /
+
+# TODO: point this at your real origin once the domain is live.
+Sitemap: https://chasonhurtis.com/sitemap.xml

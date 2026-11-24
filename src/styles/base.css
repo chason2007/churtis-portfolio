@@ -210,3 +210,39 @@ html[data-mode='flat'] .stage {
   position: relative;
   z-index: var(--z-content);
 }
+
+/* ── High contrast ────────────────────────────────────────────────────────────
+   Lift the two muted inks and the hairlines. The palette is deliberately quiet,
+   which is exactly what this preference is asking us to stop doing. */
+
+@media (prefers-contrast: more) {
+  :root {
+    --c-ink-mute: #c8d0dc;
+    --c-ink-dim: #a4aebd;
+    --c-line: rgba(238, 241, 246, 0.24);
+    --c-line-strong: rgba(238, 241, 246, 0.45);
+    --c-accent-lift: #a9c8ff;
+  }
+}
+
+/*
+ * Windows high-contrast mode replaces the palette wholesale. Decoration that
+ * only exists as colour is meaningless there, and the canvas is actively in
+ * the way — it cannot be restyled and the OS cannot see through it.
+ */
+@media (forced-colors: active) {
+  .stage,
+  .cursor {
+    display: none;
+  }
+
+  .cta,
+  .stack__item {
+    border: 1px solid currentColor;
+  }
+
+  .rail__label {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -25,7 +25,7 @@
   /* ── Inks ───────────────────────────────────────────────────────────────── */
   --c-ink: #eef1f6;         /* primary text, the wordmark core */
   --c-ink-mute: #98a2b3;    /* body copy on dark */
-  --c-ink-dim: #5a6472;     /* labels, metadata, dust */
+  --c-ink-dim: #7b8696;     /* labels, metadata, dust — 5.4:1 on --c-bg */
   --c-line: rgba(238, 241, 246, 0.1);
   --c-line-strong: rgba(238, 241, 246, 0.22);
 

@@ -20,6 +20,7 @@
     <meta name="author" content="Chason Hurtis" />
     <meta name="theme-color" content="#050607" />
     <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow" />
 
     <!-- TODO: set this to your real deployed origin once the domain is live. -->
     <link rel="canonical" href="https://chasonhurtis.com/" />
@@ -104,6 +105,18 @@
     <!-- ── The 3D stage ──────────────────────────────────────────────────────
          Removed from the DOM entirely in flat mode. -->
     <canvas class="stage" id="stage" aria-hidden="true"></canvas>
+
+    <!-- ── Ambient audio ─────────────────────────────────────────────────────
+         Off by default and synthesised in the browser — there is no audio file
+         to download. `aria-pressed` carries the state; the meter shows it. -->
+    <button class="audio" id="audio-toggle" type="button" aria-pressed="false">
+      <span class="audio__meter" aria-hidden="true">
+        <span class="audio__bar"></span>
+        <span class="audio__bar"></span>
+        <span class="audio__bar"></span>
+      </span>
+      <span class="audio__label">Ambient</span>
+    </button>
 
     <!-- ── Quick nav ─────────────────────────────────────────────────────────
          A fixed rail of ticks down the right edge, one per section. Filled

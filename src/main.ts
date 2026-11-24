@@ -3,6 +3,8 @@ import './styles/main.css';
 import { buildOutline, type OutlineEntry } from './content/outline';
 import { detectCapabilities, type Capabilities } from './core/capabilities';
 import { ScrollDriver } from './core/scroll';
+import { Ambient } from './ui/Ambient';
+import { Cursor } from './ui/Cursor';
 import { applyContent } from './ui/content';
 import { Hero } from './ui/Hero';
 import { Loader } from './ui/Loader';
@@ -92,6 +94,7 @@ async function boot(): Promise<void> {
     // The nav needs the scroll driver to move the page, so it is wired here
     // rather than at render time.
     wireNav(outline, scroll, html);
+    wireControls();
 
     await loader.finish();
     html.dataset.boot = 'ready';
@@ -145,6 +148,28 @@ function wireNav(outline: OutlineEntry[], scroll: ScrollDriver, html: HTMLElemen
     html.dataset.zone = entry.id;
     html.dataset.atTop = state.nearest === 0 ? 'true' : 'false';
   });
+}
+
+/**
+ * Ambient audio and the custom cursor.
+ *
+ * Both are strictly optional decoration. The audio is off until asked for and
+ * its AudioContext is not constructed until then; the cursor only mounts for a
+ * fine pointer with motion allowed.
+ */
+function wireControls(): void {
+  const toggle = maybe<HTMLButtonElement>('#audio-toggle');
+  if (toggle) {
+    const ambient = new Ambient();
+    // The click is the user gesture browsers require before audio may start.
+    toggle.addEventListener('click', () => {
+      void ambient.toggle().then((playing) => {
+        toggle.setAttribute('aria-pressed', String(playing));
+      });
+    });
+  }
+
+  new Cursor().mount();
 }
 
 /** The 2D path: no canvas, no Three.js, native scrolling, same content. */
