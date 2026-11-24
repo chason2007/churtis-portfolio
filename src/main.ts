@@ -84,6 +84,9 @@ async function boot(): Promise<void> {
   loader.set(STEP.fonts, 'Preparing scene');
 
   const hero = new Hero({ reducedMotion: capabilities.reducedMotion });
+  // Fetch the reveal animation now so it is resident before the scene's intro
+  // timeline starts. GSAP rides along with it, off the critical path.
+  await hero.prepare();
 
   const finish = async (scroll: ScrollDriver): Promise<void> => {
     // The nav needs the scroll driver to move the page, so it is wired here
@@ -150,10 +153,10 @@ async function bootFlat(hero: Hero, sections: HTMLElement[], finish: Finish): Pr
   // leaving an empty compositing layer behind.
   maybe('#stage')?.remove();
 
-  // Still worth running: the nav rail reads `index` from it for its active
-  // state. Smooth scrolling is off — the browser's own is the right behaviour
-  // here, and is what a reduced-motion visitor asked for.
-  const scroll = new ScrollDriver({ sections, smooth: false });
+  // Still worth running: the nav rail reads the active section from it. Smooth
+  // scrolling stays off — the browser's own is the right behaviour here, and is
+  // exactly what a reduced-motion visitor asked for.
+  const scroll = new ScrollDriver({ sections });
 
   await finish(scroll);
   hero.reveal();
@@ -199,7 +202,8 @@ async function boot3D(
 
   // Scroll drives the camera. Both run off the Experience's ticker so the whole
   // app still has exactly one requestAnimationFrame loop.
-  const scroll = new ScrollDriver({ sections, smooth: true });
+  const scroll = new ScrollDriver({ sections });
+  await scroll.enableSmooth();
   scroll.on((state) => experience.setScroll(state.t));
   experience.ticker.add((delta) => {
     scroll.raf(performance.now());

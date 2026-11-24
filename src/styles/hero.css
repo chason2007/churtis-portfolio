@@ -219,20 +219,12 @@ html[data-anim='on'] [data-reveal] {
   }
 }
 
-/* ── Flat mode layout ───────────────────────────────────────────────────────────
-   Without a wordmark in the scene, the hero becomes an ordinary centred stack
-   in normal document flow. Completed in step 5. */
-html[data-mode='flat'] .hero__frame {
-  position: static;
-  transform: none;
-  width: 100%;
+/* Set by ui/Hero.ts if the animation module cannot be fetched. A missing
+   animation is cosmetic; missing copy is not. */
+html[data-reveal-fallback='on'] [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
 }
 
-html[data-mode='flat'] .hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--hero-gap);
-  text-align: center;
-}
+/* The flat layout's version of the hero lives in flat.css. */

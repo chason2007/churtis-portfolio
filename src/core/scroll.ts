@@ -1,4 +1,4 @@
-import Lenis from 'lenis';
+import type Lenis from 'lenis';
 
 /**
  * The scroll driver.
@@ -12,8 +12,10 @@ import Lenis from 'lenis';
  * any height they need to be — a project with more copy can be taller — without
  * the camera and the copy drifting out of sync.
  *
- * Smooth scrolling (Lenis) is enabled only when motion is welcome. With reduced
- * motion, or in the flat layout, the browser's own scrolling is left alone.
+ * Smooth scrolling (Lenis) is opt-in via `enableSmooth()`, which fetches the
+ * library on demand — so a reduced-motion visitor never downloads a
+ * smooth-scrolling library, and the flat layout does not pay for one it will
+ * not use. Without it, the browser's own scrolling is left alone.
  */
 
 export interface ScrollState {
@@ -42,8 +44,6 @@ export type ScrollListener = (state: ScrollState) => void;
 export interface ScrollDriverOptions {
   /** Section elements, in the same order as the zones. */
   sections: HTMLElement[];
-  /** Enable Lenis smooth scrolling. */
-  smooth: boolean;
 }
 
 export class ScrollDriver {
@@ -51,17 +51,36 @@ export class ScrollDriver {
 
   private readonly sections: HTMLElement[];
   private readonly listeners = new Set<ScrollListener>();
-  private readonly lenis: Lenis | null = null;
+  private lenis: Lenis | null = null;
 
   /** Document-space centre of each section, recomputed on resize. */
   private anchors: number[] = [];
   private resizeFrame = 0;
   private lastScroll = 0;
+  private disposed = false;
 
-  constructor({ sections, smooth }: ScrollDriverOptions) {
+  constructor({ sections }: ScrollDriverOptions) {
     this.sections = sections;
 
-    if (smooth) {
+    this.measure();
+    this.lastScroll = window.scrollY;
+
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('resize', this.scheduleMeasure, { passive: true });
+
+    this.recompute(0);
+  }
+
+  /**
+   * Fetch Lenis and take over the scroll. Safe to call once; a failure leaves
+   * native scrolling in place, which is a degraded experience rather than a
+   * broken one.
+   */
+  async enableSmooth(): Promise<void> {
+    if (this.lenis || this.disposed) return;
+
+    try {
+      const { default: Lenis } = await import('lenis');
       this.lenis = new Lenis({
         // Long and heavy: the camera flight wants weight behind it. Anything
         // snappier and the path reads as a series of jumps.
@@ -71,15 +90,10 @@ export class ScrollDriver {
         wheelMultiplier: 0.9,
         touchMultiplier: 1.6,
       });
+      this.lenis.resize();
+    } catch (error) {
+      console.warn('[scroll] smooth scrolling unavailable — falling back to native', error);
     }
-
-    this.measure();
-    this.lastScroll = window.scrollY;
-
-    window.addEventListener('scroll', this.onScroll, { passive: true });
-    window.addEventListener('resize', this.scheduleMeasure, { passive: true });
-
-    this.recompute(0);
   }
 
   on(fn: ScrollListener): () => void {
@@ -127,6 +141,7 @@ export class ScrollDriver {
   }
 
   dispose(): void {
+    this.disposed = true;
     if (this.resizeFrame) cancelAnimationFrame(this.resizeFrame);
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('resize', this.scheduleMeasure);
