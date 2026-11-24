@@ -18,11 +18,18 @@ export interface PerfGuardOptions {
   /** Average frame time above which quality steps down, in ms. */
   budgetMs?: number;
   /**
-   * Frames ignored at startup. The first frames include shader compilation,
-   * buffer uploads and the intro's heaviest moment — judging on those would
-   * downgrade every device.
+   * Frames ignored at startup. The first frames include shader compilation and
+   * buffer uploads, and the intro that follows is the heaviest moment in the
+   * whole scene — full particle counts, a wide-open aperture inflating every
+   * sprite, and the bloom flash. Judging on those would downgrade every device.
    */
   warmupFrames?: number;
+  /**
+   * Consecutive over-budget windows required before stepping down. One bad
+   * second is usually something else: a GC pause, a tab coming back to the
+   * foreground, a screen recording, the compositor catching up after a resize.
+   */
+  strikes?: number;
   /** How many times quality may step down. */
   maxLevel?: number;
   /** Called with the new level, 1-based. */
@@ -36,12 +43,14 @@ export class PerfGuard {
   private readonly sampleSize: number;
   private readonly budgetMs: number;
   private readonly maxLevel: number;
+  private readonly requiredStrikes: number;
   private readonly onDowngrade: (level: number) => void;
 
   private warmup: number;
   private total = 0;
   private frames = 0;
   private level = 0;
+  private strikes = 0;
 
   /** Rolling average frame time in ms, from the last completed window. */
   private lastAverage = 0;
@@ -49,13 +58,16 @@ export class PerfGuard {
   constructor({
     sampleSize = 60,
     budgetMs = DEFAULT_BUDGET_MS,
-    warmupFrames = 180,
+    // ~5s at 60fps: past the intro, which is the scene's heaviest moment.
+    warmupFrames = 300,
+    strikes = 2,
     maxLevel = 3,
     onDowngrade,
   }: PerfGuardOptions) {
     this.sampleSize = sampleSize;
     this.budgetMs = budgetMs;
     this.warmup = warmupFrames;
+    this.requiredStrikes = Math.max(1, strikes);
     this.maxLevel = maxLevel;
     this.onDowngrade = onDowngrade;
   }
@@ -95,10 +107,18 @@ export class PerfGuard {
     this.total = 0;
     this.frames = 0;
 
-    if (this.lastAverage > this.budgetMs && this.level < this.maxLevel) {
-      this.level += 1;
-      this.onDowngrade(this.level);
+    if (this.lastAverage <= this.budgetMs) {
+      // A good window clears the record — only *sustained* trouble counts.
+      this.strikes = 0;
+      return;
     }
+
+    this.strikes += 1;
+    if (this.strikes < this.requiredStrikes || this.level >= this.maxLevel) return;
+
+    this.strikes = 0;
+    this.level += 1;
+    this.onDowngrade(this.level);
   }
 }
 
