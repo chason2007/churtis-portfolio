@@ -110,17 +110,16 @@ export const site: SiteContent = {
       ],
     },
     {
-      id: 'coaching-practice',
+      id: 'freelance-work',
       index: '04',
-      title: 'Coaching Practice',
-      subtitle: 'Freelance Website Build',
-      role: 'Freelance Developer',
+      title: 'Freelance Work',
+      subtitle: 'Coaching website for Thelma Hurtis',
+      role: 'Full-Stack Developer',
       // TODO: add the period, e.g. 'Mar 2026'.
-      blurb:
-        'My first freelance engagement: a production site for a certified life and success coach.',
+      blurb: 'A production site for a certified life and success coach.',
       body: [
         'Designed and built the public site for a life and success coaching practice — background, the coaching offer, pricing, and a route for clients to book a session.',
-        'Shipped on a custom domain and running in production.',
+        'My first freelance engagement, shipped on a custom domain and running in production.',
       ],
       highlights: [
         'About, Coaching, Pricing and Highlights sections',
