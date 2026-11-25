@@ -56,8 +56,8 @@ export interface TextSample {
   inkHeight: number;
 }
 
-/** Raster width. 2048 is plenty of coverage detail and stays well inside limits. */
-const CANVAS_WIDTH = 2048;
+/** Raster width. 1024 keeps crisp glyph sampling at 4x lower CPU/readback cost. */
+const CANVAS_WIDTH = 1024;
 /** Font size used for measurement before scaling to fit CANVAS_WIDTH. */
 const MEASURE_SIZE = 200;
 /** Horizontal padding as a fraction of the canvas, so glyphs never clip. */
@@ -96,8 +96,10 @@ function drawTracked(
  */
 export async function ensureFont(family: string, weight: number): Promise<void> {
   if (!('fonts' in document)) return;
+  const descriptor = fontString(weight, MEASURE_SIZE, `"${family}"`);
+  if (document.fonts.check(descriptor)) return;
   try {
-    await document.fonts.load(fontString(weight, MEASURE_SIZE, `"${family}"`));
+    await document.fonts.load(descriptor);
     await document.fonts.ready;
   } catch {
     // A missing font is a visual regression, not a crash — carry on with the fallback.

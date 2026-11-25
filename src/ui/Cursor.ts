@@ -80,17 +80,26 @@ export class Cursor {
     }
   };
 
-  private onPointerOver = (event: Event): void => {
+  private onPointerOver = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') return;
     const target = event.target as Element | null;
     if (target?.closest?.(INTERACTIVE)) this.root?.setAttribute('data-hot', 'true');
   };
 
-  private onPointerOut = (event: Event): void => {
+  private onPointerOut = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') return;
     const target = event.target as Element | null;
     if (target?.closest?.(INTERACTIVE)) this.root?.removeAttribute('data-hot');
   };
 
-  private onPointerDown = (): void => this.root?.setAttribute('data-down', 'true');
+  private onPointerDown = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') {
+      this.root?.removeAttribute('data-visible');
+      this.root?.removeAttribute('data-hot');
+      return;
+    }
+    this.root?.setAttribute('data-down', 'true');
+  };
   private onPointerUp = (): void => this.root?.removeAttribute('data-down');
   private onLeave = (): void => this.root?.removeAttribute('data-visible');
   private onEnter = (): void => this.root?.setAttribute('data-visible', 'true');

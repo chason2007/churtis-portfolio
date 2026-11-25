@@ -18,16 +18,20 @@ import type { HeroReveal } from './heroReveal';
 export interface HeroOptions {
   /** Skip all motion and show the final state immediately. */
   reducedMotion: boolean;
+  /** Whether the 3D scene is active; flat/mobile skips downloading GSAP. */
+  use3D: boolean;
 }
 
 export class Hero {
   private readonly reducedMotion: boolean;
+  private readonly use3D: boolean;
   private readonly revealTargets: HTMLElement[];
 
   private revealFn: HeroReveal | null = null;
 
-  constructor({ reducedMotion }: HeroOptions) {
+  constructor({ reducedMotion, use3D }: HeroOptions) {
     this.reducedMotion = reducedMotion;
+    this.use3D = use3D;
 
     this.renderCtas();
 
@@ -38,9 +42,9 @@ export class Hero {
     );
   }
 
-  /** Fetch the animation module, unless the visitor asked for less motion. */
+  /** Fetch the animation module only when the 3D timeline needs GSAP. */
   async prepare(): Promise<void> {
-    if (this.reducedMotion) return;
+    if (this.reducedMotion || !this.use3D) return;
 
     try {
       const { createHeroReveal } = await import('./heroReveal');
@@ -61,8 +65,18 @@ export class Hero {
    * @param position Offset within the parent, in seconds.
    */
   reveal(parent?: gsap.core.Timeline, position?: number): void {
-    // Reduced motion: the copy was never hidden, so there is nothing to do.
-    this.revealFn?.(parent, position);
+    if (this.reducedMotion) return;
+
+    if (this.revealFn) {
+      this.revealFn(parent, position);
+      return;
+    }
+
+    // Flat mode (or fallback from failed 3D boot): let CSS commit the hidden
+    // state before transitioning to revealed.
+    requestAnimationFrame(() => {
+      document.documentElement.dataset.heroRevealed = 'on';
+    });
   }
 
   /**

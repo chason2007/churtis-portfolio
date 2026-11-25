@@ -36,6 +36,7 @@ export class ZoneField {
 
   /** Instances allocated at construction — the ceiling for setCount(). */
   private maxCount = 0;
+  private readonly baseSize: number;
 
   private revealValue = 0;
 
@@ -43,6 +44,7 @@ export class ZoneField {
     const shape = buildShape(kind, count, scale);
     this.radius = shape.radius;
     this.spin = spin;
+    this.baseSize = scale * 0.011;
 
     const base = new THREE.PlaneGeometry(1, 1);
     this.geometry = new THREE.InstancedBufferGeometry();
@@ -69,7 +71,7 @@ export class ZoneField {
       uniforms: {
         uTime: { value: 0 },
         uReveal: { value: 0 },
-        uSize: { value: scale * 0.011 },
+        uSize: { value: this.baseSize },
         // Far dimmer than the hero wordmark on purpose: a zone is scenery
         // behind the copy, and the name stays the brightest thing on the site.
         uIntensity: { value: 0.42 },
@@ -122,6 +124,11 @@ export class ZoneField {
    */
   setCount(count: number): void {
     this.geometry.instanceCount = Math.max(0, Math.min(count, this.maxCount));
+  }
+
+  /** Scale sprite size relative to viewport pixel density. */
+  setSizeScale(scale: number): void {
+    this.material.uniforms.uSize.value = this.baseSize * scale;
   }
 
   setFocus(distance: number, aperture?: number): void {

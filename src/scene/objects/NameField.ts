@@ -39,9 +39,11 @@ export class NameField {
 
   /** Instances allocated at construction — the ceiling for setCount(). */
   private maxCount = 0;
+  private readonly baseSize: number;
 
   constructor(options: NameFieldOptions) {
     const { lines, fontFamily, fontWeight, count, worldWidth, theme } = options;
+    this.baseSize = Math.max(worldWidth, 10.5) * 0.0022;
 
     this.sample = sampleText({
       lines,
@@ -100,7 +102,7 @@ export class NameField {
       uniforms: {
         uTime: { value: 0 },
         uProgress: { value: 0 },
-        uSize: { value: worldWidth * 0.0022 },
+        uSize: { value: this.baseSize },
         // Brightness per particle, and the other half of the density balance.
         //
         // The wordmark covers only ~48k screen pixels at 1440p, so a particle
@@ -110,7 +112,7 @@ export class NameField {
         // that the eye integrates into letterforms, with the bloom pass binding
         // them together. Hence a high intensity and a modest count, not the
         // reverse. See the [textSampler] coverage log in development.
-        uIntensity: { value: 0.95 },
+        uIntensity: { value: count < 10000 ? 1.12 : 0.95 },
         uFocus: { value: 9 },
         uAperture: { value: 1.5 },
         uDrift: { value: worldWidth * 0.004 },
@@ -171,6 +173,11 @@ export class NameField {
   /** Per-particle brightness. Lower = grainier, higher = more solid. */
   setIntensity(value: number): void {
     this.material.uniforms.uIntensity.value = value;
+  }
+
+  /** Scale sprite size relative to viewport pixel density. */
+  setSizeScale(scale: number): void {
+    this.material.uniforms.uSize.value = this.baseSize * scale;
   }
 
   /** Focal distance in world units — the hero keeps this on the wordmark plane. */

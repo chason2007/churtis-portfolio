@@ -55,41 +55,51 @@ async function boot(): Promise<void> {
   }
   window.scrollTo(0, 0);
 
-  const loader = new Loader();
-  loader.set(STEP.start, 'Initialising');
-
   const capabilities = detectCapabilities();
   html.dataset.mode = capabilities.use3D ? '3d' : 'flat';
   if (capabilities.reducedMotion) html.dataset.reducedMotion = 'true';
+
+  const loader = new Loader({
+    fast: !capabilities.use3D,
+    reducedMotion: capabilities.reducedMotion,
+  });
+  loader.set(STEP.start, 'Initialising');
 
   if (import.meta.env.DEV) {
     console.info('[boot] capabilities', capabilities);
   }
 
+  // Kick off async downloads (Three.js chunk, GSAP reveal if 3D, fonts) in
+  // parallel immediately so we never pay a sequential network waterfall.
+  const experiencePromise = capabilities.use3D ? import('./scene/Experience') : null;
+  // Prevent unhandled-rejection noise if the chunk fails before boot3D awaits it.
+  experiencePromise?.catch(() => undefined);
+  const hero = new Hero({
+    reducedMotion: capabilities.reducedMotion,
+    use3D: capabilities.use3D,
+  });
+  const heroPromise = hero.prepare();
+  const fontsPromise = document.fonts
+    ? document.fonts.ready.catch(() => undefined)
+    : Promise.resolve();
+
+  let activeScroll: ScrollDriver | null = null;
+
   // Bind the hero copy, then build every section below it from site.ts.
   applyContent(document);
   const outline = buildOutline();
-  const sections = new Sections(outline);
+  const sections = new Sections(outline, {
+    flat: !capabilities.use3D || capabilities.isMobile,
+    onLayoutChange: () => activeScroll?.refresh(),
+  });
   const sectionElements = sections.render();
   loader.set(STEP.content, 'Loading type');
 
-  // Both faces are self-hosted and in the critical CSS, so this is quick — but
-  // the wordmark is rasterised from the display face, so it must be resident.
-  if (document.fonts) {
-    try {
-      await document.fonts.ready;
-    } catch {
-      /* A font failure is cosmetic; carry on with the fallback stack. */
-    }
-  }
-  loader.set(STEP.fonts, 'Preparing scene');
-
-  const hero = new Hero({ reducedMotion: capabilities.reducedMotion });
-  // Fetch the reveal animation now so it is resident before the scene's intro
-  // timeline starts. GSAP rides along with it, off the critical path.
-  await hero.prepare();
+  await Promise.all([fontsPromise, heroPromise]);
+  loader.set(STEP.fonts, capabilities.use3D ? 'Preparing scene' : 'Preparing page');
 
   const finish = async (scroll: ScrollDriver): Promise<void> => {
+    activeScroll = scroll;
     // The nav needs the scroll driver to move the page, so it is wired here
     // rather than at render time.
     wireNav(outline, scroll, html);
@@ -100,6 +110,13 @@ async function boot(): Promise<void> {
 
     // The document is now its full height and the overflow lock is off.
     scroll.refresh();
+
+    if ('ResizeObserver' in window) {
+      const main = maybe('#main');
+      if (main) {
+        new ResizeObserver(() => scroll.refresh()).observe(main);
+      }
+    }
 
     if (entryHash) {
       scroll.scrollTo(entryHash, { immediate: true });
@@ -113,7 +130,7 @@ async function boot(): Promise<void> {
   }
 
   try {
-    await boot3D(loader, hero, capabilities, sectionElements, finish);
+    await boot3D(loader, hero, capabilities, sectionElements, finish, experiencePromise!);
   } catch (error) {
     // A WebGL failure must never cost the visitor the content. Fall back to the
     // flat layout and carry on.
@@ -140,12 +157,22 @@ function wireNav(outline: OutlineEntry[], scroll: ScrollDriver, html: HTMLElemen
   });
   nav.mount();
 
+  let lastZoneId = '';
+  let lastAtTop = '';
+
   scroll.on((state) => {
     const entry = outline[state.nearest];
     if (!entry) return;
     nav.setActive(entry.id);
-    html.dataset.zone = entry.id;
-    html.dataset.atTop = state.nearest === 0 ? 'true' : 'false';
+    if (entry.id !== lastZoneId) {
+      lastZoneId = entry.id;
+      html.dataset.zone = entry.id;
+    }
+    const atTop = state.nearest === 0 ? 'true' : 'false';
+    if (atTop !== lastAtTop) {
+      lastAtTop = atTop;
+      html.dataset.atTop = atTop;
+    }
   });
 }
 
@@ -171,14 +198,15 @@ async function boot3D(
   capabilities: Capabilities,
   sections: HTMLElement[],
   finish: Finish,
+  experiencePromise: Promise<typeof import('./scene/Experience')>,
 ): Promise<void> {
   const canvas = maybe<HTMLCanvasElement>('#stage');
   if (!canvas) throw new Error('[boot] #stage canvas is missing from the markup');
 
   loader.set(STEP.chunk, 'Compiling shaders');
 
-  // Code-split: this is the only place Three.js enters the graph.
-  const { Experience } = await import('./scene/Experience');
+  // Code-split: started eagerly at boot, resolved here.
+  const { Experience } = await experiencePromise;
 
   // Resolved by the Experience the moment a frame has actually reached the
   // screen — the only honest definition of "loaded" for a 3D scene.

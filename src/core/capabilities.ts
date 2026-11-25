@@ -14,7 +14,7 @@
  * costs a fraction of a frame and leaks nothing.
  */
 
-export type Tier = 'high' | 'medium' | 'low' | 'none';
+export type Tier = 'high' | 'medium' | 'low' | 'mobile' | 'none';
 
 export interface RenderBudget {
   /** Instances in the hero name field. */
@@ -85,7 +85,8 @@ function readOverrides(): { mode: '3d' | 'flat' | null; tier: Tier | null } {
 
   return {
     mode: mode === '3d' || mode === 'flat' ? mode : null,
-    tier: tier === 'low' || tier === 'medium' || tier === 'high' ? tier : null,
+    tier:
+      tier === 'low' || tier === 'medium' || tier === 'high' || tier === 'mobile' ? tier : null,
   };
 }
 
@@ -94,22 +95,32 @@ const SOFTWARE_HINTS = ['swiftshader', 'llvmpipe', 'softwarerasterizer', 'basic 
 /** Budgets per tier. Tuned so the mid tier holds 60fps on an integrated GPU. */
 const BUDGETS: Record<Exclude<Tier, 'none'>, RenderBudget> = {
   high: {
-    nameParticles: 16000,
-    dustParticles: 2600,
-    zoneParticles: 7000,
-    maxPixelRatio: 2,
+    nameParticles: 15000,
+    dustParticles: 2000,
+    zoneParticles: 6000,
+    maxPixelRatio: 1.75,
     bloom: true,
     bloomDivisor: 2,
     grain: true,
     msaa: 0, // particles are soft-edged; MSAA buys nothing and costs bandwidth
   },
   medium: {
-    nameParticles: 11000,
-    dustParticles: 1200,
-    zoneParticles: 4200,
+    nameParticles: 10000,
+    dustParticles: 1000,
+    zoneParticles: 3600,
     maxPixelRatio: 1.5,
     bloom: true,
     bloomDivisor: 3,
+    grain: true,
+    msaa: 0,
+  },
+  mobile: {
+    nameParticles: 7500,
+    dustParticles: 750,
+    zoneParticles: 2600,
+    maxPixelRatio: 1.35,
+    bloom: true,
+    bloomDivisor: 4,
     grain: true,
     msaa: 0,
   },
@@ -190,9 +201,9 @@ export function detectCapabilities(): Capabilities {
   } else if (overrides.mode === '3d') {
     tier = cores >= 8 ? 'high' : 'medium';
   } else if (isMobile) {
-    // Phones get the 2D layout rather than a compromised 3D scene. Changing this
-    // to `tier = 'low'` is all it takes to opt mobiles into the 3D scene.
-    tier = 'none';
+    // Serve the 3D scene on capable mobile GPUs using the mobile budget;
+    // constrained devices drop down to the lightest tier without bloom.
+    tier = (cores > 0 && cores < 4) || (memoryGB > 0 && memoryGB <= 2) ? 'low' : 'mobile';
   } else if (cores >= 8 && (memoryGB === 0 || memoryGB >= 8)) {
     tier = 'high';
   } else if (cores >= 4) {

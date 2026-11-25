@@ -62,9 +62,17 @@ const FIXED_SHAPES: Partial<
   contact: { shape: 'funnel', scale: 3.6, laneScale: 2, targetPull: 5 },
 };
 
-export function buildZones(): Zone[] {
+export function buildZones(compact = false): Zone[] {
   const outline = buildOutline();
   let projectIndex = 0;
+
+  // On narrow/portrait viewports copy fills the full column width, so pull
+  // zone structures toward the centre line and scale slightly down so they
+  // stay framed inside the viewport without clipping at the edges.
+  const laneScale = compact ? 0.28 : 1;
+  const cameraLaneScale = compact ? 0.45 : 1;
+  const pullScale = compact ? 0.25 : 1;
+  const sizeScale = compact ? 0.78 : 1;
 
   return outline.map((entry, i) => {
     // The hero is fixed: the camera sits back from the wordmark at the origin.
@@ -82,20 +90,25 @@ export function buildZones(): Zone[] {
 
     const fixed = FIXED_SHAPES[entry.kind];
     const shape = fixed ? fixed.shape : shapeForProject(projectIndex);
-    const shapeScale = fixed ? fixed.scale : 3.0;
+    const shapeScale = (fixed ? fixed.scale : 3.0) * sizeScale;
     if (!fixed) projectIndex += 1;
 
+    const entryLaneScale = compact ? (entry.kind === 'contact' ? 0 : laneScale) : (fixed?.laneScale ?? 1);
+    const entryPull = compact
+      ? (entry.kind === 'contact' ? 0 : TARGET_PULL * pullScale)
+      : (fixed?.targetPull ?? TARGET_PULL);
+
     const shapePosition = new THREE.Vector3(
-      lane * LANE * (fixed?.laneScale ?? 1),
+      lane * LANE * entryLaneScale,
       rise * 0.8,
       z - LEAD,
     );
 
     return {
       ...entry,
-      camera: new THREE.Vector3(-lane * CAMERA_LANE, -rise * 0.5, z),
+      camera: new THREE.Vector3(-lane * CAMERA_LANE * cameraLaneScale, -rise * 0.5, z),
       target: new THREE.Vector3(
-        shapePosition.x - lane * (fixed?.targetPull ?? TARGET_PULL),
+        shapePosition.x - lane * entryPull,
         shapePosition.y * 0.5,
         shapePosition.z,
       ),

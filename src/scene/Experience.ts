@@ -160,9 +160,11 @@ export class Experience {
    */
   private onDowngrade = (level: number): void => {
     switch (level) {
-      case 1:
-        this.viewport.setMaxPixelRatio(Math.min(this.viewport.size.pixelRatio, DEGRADED_PIXEL_RATIO));
+      case 1: {
+        const degradedRatio = this.capabilities.isMobile ? 1 : DEGRADED_PIXEL_RATIO;
+        this.viewport.setMaxPixelRatio(Math.min(this.viewport.size.pixelRatio, degradedRatio));
         break;
+      }
       case 2:
         this.composer.setBloomStrength(0);
         break;
@@ -200,26 +202,36 @@ export class Experience {
       this.renderer.forceContextLoss();
     });
 
-    this.path = buildPath(buildZones());
+    const compact = this.viewport.size.width < 860;
+    const portrait = this.viewport.size.aspect < 0.85;
+    const splitLines = portrait && site.hero.name.includes(' ');
+    const nameLines = splitLines ? site.hero.name.trim().split(/\s+/) : [site.hero.name];
+    const nameWorldWidth = splitLines ? 7.2 : NAME_WORLD_WIDTH;
+    const frameWorldWidth = splitLines ? nameWorldWidth * 1.24 : FRAME_WORLD_WIDTH;
+
+    this.path = buildPath(buildZones(compact));
 
     this.rig = new CameraRig({ size: this.viewport.size });
-    this.rig.frameWidth(FRAME_WORLD_WIDTH, HERO_DISTANCE);
+    this.rig.frameWidth(frameWorldWidth, HERO_DISTANCE);
 
     if (this.reducedMotion) {
       // Both are autonomous: the float moves with no input at all, and the
       // parallax keeps gliding after the pointer has stopped.
       this.rig.idleAmplitude = 0;
       this.rig.parallax.set(0, 0);
+    } else if (this.capabilities.isMobile) {
+      // Slightly deeper gentle breathing since touch devices lack hover parallax.
+      this.rig.idleAmplitude = 0.11;
     }
     this.scene.add(this.rig.dolly);
 
     this.nameField = this.disposer.add(
       new NameField({
-        lines: [site.hero.name],
+        lines: nameLines,
         fontFamily: DISPLAY_FONT,
         fontWeight: DISPLAY_WEIGHT,
         count: budget.nameParticles,
-        worldWidth: NAME_WORLD_WIDTH,
+        worldWidth: nameWorldWidth,
         theme,
       }),
     );
@@ -253,9 +265,19 @@ export class Experience {
     this.composer.setBloomStrength(BLOOM_FLASH);
     this.lens.aperture = APERTURE_OPEN;
 
-    // Place the camera before the first frame so nothing is rendered from the
-    // scene's default position.
+    // Place the camera and scale sprites for the current screen aspect before
+    // the first frame renders.
     this.applyPath();
+    this.rig.update(0, this.pointer.smooth);
+    this.updateSpriteScale();
+
+    // Warm the shared ZoneField shader program during boot so the first scroll
+    // into About never stalls compiling it on the main thread.
+    if (this.zoneFields[0]) {
+      this.zoneFields[0].object.visible = true;
+      this.renderer.compile(this.scene, this.rig.camera);
+      this.zoneFields[0].object.visible = false;
+    }
 
     this.disposer.add(this.viewport.on(this.onResize));
     this.disposer.add(this.ticker.add(this.onTick));
@@ -281,7 +303,7 @@ export class Experience {
    */
   wordmarkHeightRatio(): number {
     const frameHeight =
-      2 * HERO_DISTANCE * Math.tan(THREE.MathUtils.degToRad(this.rig.camera.fov) / 2);
+      2 * this.rig.heroDistance * Math.tan(THREE.MathUtils.degToRad(this.rig.camera.fov) / 2);
     return this.nameField.sample.inkHeight / frameHeight;
   }
 
@@ -322,25 +344,25 @@ export class Experience {
         exposure,
         {
           value: 1,
-          duration: 1.4,
-          ease: 'power2.inOut',
+          duration: 0.75,
+          ease: 'power2.out',
           onUpdate: () => this.composer.setExposure(exposure.value),
         },
         0,
       )
-      .to(this.introOffset, { z: 0, duration: 3.6, ease: 'power2.out' }, 0)
+      .to(this.introOffset, { z: 0, duration: 1.9, ease: 'power3.out' }, 0)
       .to(
         bloom,
         {
           strength: BLOOM_REST,
-          duration: 3.2,
+          duration: 1.7,
           ease: 'power2.out',
           onUpdate: () => this.composer.setBloomStrength(bloom.strength),
         },
-        0.2,
+        0.08,
       )
-      .to(this.nameField, { progress: 1, duration: 3.1, ease: 'power3.inOut' }, 0.15)
-      .to(this.lens, { aperture: APERTURE_SHARP, duration: 2.9, ease: 'power2.inOut' }, 0.3);
+      .to(this.nameField, { progress: 1, duration: 1.65, ease: 'power3.out' }, 0.05)
+      .to(this.lens, { aperture: APERTURE_SHARP, duration: 1.6, ease: 'power2.out' }, 0.1);
 
     return timeline;
   }
@@ -407,8 +429,25 @@ export class Experience {
     this.renderer.setSize(size.width, size.height, false);
     this.rig.resize(size);
     this.composer.resize(size);
+    this.updateSpriteScale();
     this.onFraming?.(this.wordmarkHeightRatio());
   };
+
+  /**
+   * Keep particles crisp in screen pixels across desktop and portrait mobile
+   * viewports where a wider vertical FOV increases world-units per pixel.
+   */
+  private updateSpriteScale(): void {
+    const frameHeight =
+      2 * this.rig.heroDistance * Math.tan(THREE.MathUtils.degToRad(this.rig.camera.fov) / 2);
+    const unitsPerPx = frameHeight / Math.max(this.viewport.size.height, 1);
+    const bloomCompensation = this.capabilities.budget.bloom ? 1 : 1.25;
+    const scale = THREE.MathUtils.clamp(unitsPerPx / 0.0083, 0.95, 2.5) * bloomCompensation;
+
+    this.nameField.setSizeScale(scale);
+    this.dustField.setSizeScale(scale);
+    for (const field of this.zoneFields) field.setSizeScale(scale);
+  }
 
   private onTick = (delta: number, elapsed: number): void => {
     this.pointer.update(delta);

@@ -13,21 +13,34 @@ import { maybe, wait } from './dom';
  */
 
 /** Below this, the sequence reads as a glitch rather than an intro. */
-const MIN_VISIBLE_MS = 1150;
+const DEFAULT_MIN_VISIBLE_MS = 420;
 /** Matches the `.loader__fill` transition, so the bar lands before we leave. */
-const BAR_SETTLE_MS = 440;
+const DEFAULT_BAR_SETTLE_MS = 220;
 /** Matches the `[data-state='leaving']` transitions in loader.css. */
-const LEAVE_MS = 580;
+const DEFAULT_LEAVE_MS = 260;
 /** Matches the `.loader` opacity transition. */
-const FADE_MS = 780;
+const DEFAULT_FADE_MS = 380;
 /** Status word cross-fade half-cycle, matches `.loader__status`. */
-const SWAP_MS = 300;
+const SWAP_MS = 160;
+
+export interface LoaderOptions {
+  /** Tighter timings for the 2D / mobile path where no 3D scene is loading. */
+  fast?: boolean;
+  /** Skip artificial hold times when the visitor prefers reduced motion. */
+  reducedMotion?: boolean;
+}
 
 export class Loader {
   private readonly root: HTMLElement | null;
   private readonly status: HTMLElement | null;
   private readonly count: HTMLElement | null;
   private readonly fill: HTMLElement | null;
+
+  private readonly minVisibleMs: number;
+  private readonly barSettleMs: number;
+  private readonly leaveMs: number;
+  private readonly fadeMs: number;
+  private readonly reducedMotion: boolean;
 
   private readonly startedAt = performance.now();
 
@@ -37,11 +50,29 @@ export class Loader {
   private countFrame = 0;
   private finished = false;
 
-  constructor() {
+  constructor({ fast = false, reducedMotion = false }: LoaderOptions = {}) {
     this.root = maybe('#loader');
     this.status = maybe('#loader-status');
     this.count = maybe('#loader-count');
     this.fill = maybe('#loader-fill');
+
+    this.reducedMotion = reducedMotion;
+    if (reducedMotion) {
+      this.minVisibleMs = 0;
+      this.barSettleMs = 30;
+      this.leaveMs = 30;
+      this.fadeMs = 30;
+    } else if (fast) {
+      this.minVisibleMs = 180;
+      this.barSettleMs = 160;
+      this.leaveMs = 180;
+      this.fadeMs = 260;
+    } else {
+      this.minVisibleMs = DEFAULT_MIN_VISIBLE_MS;
+      this.barSettleMs = DEFAULT_BAR_SETTLE_MS;
+      this.leaveMs = DEFAULT_LEAVE_MS;
+      this.fadeMs = DEFAULT_FADE_MS;
+    }
 
     this.label = this.status?.textContent?.trim() ?? '';
   }
@@ -79,29 +110,32 @@ export class Loader {
     if (this.finished) return;
     this.finished = true;
 
-    const remaining = MIN_VISIBLE_MS - (performance.now() - this.startedAt);
+    const remaining = this.minVisibleMs - (performance.now() - this.startedAt);
     if (remaining > 0) await wait(remaining);
 
     this.apply(1, 'Ready');
 
     // Let the bar actually reach the end before we pull the frame away.
-    await wait(BAR_SETTLE_MS);
+    await wait(this.barSettleMs);
 
     if (!this.root) return;
 
     this.root.dataset.state = 'leaving';
-    await wait(LEAVE_MS);
+    await wait(this.leaveMs);
 
     this.root.dataset.state = 'done';
-    // Out of the accessibility tree immediately; out of the DOM once the fade
-    // has finished, so nothing invisible is left holding a paint layer.
+    // Out of the accessibility tree immediately and resolve right away so the
+    // scene reveal begins while the backdrop cross-fades out, then remove the
+    // node once the transition finishes.
     this.root.setAttribute('aria-hidden', 'true');
     this.root.removeAttribute('role');
     this.root.removeAttribute('aria-live');
 
-    await wait(FADE_MS);
-    if (this.countFrame) cancelAnimationFrame(this.countFrame);
-    this.root.remove();
+    const root = this.root;
+    window.setTimeout(() => {
+      if (this.countFrame) cancelAnimationFrame(this.countFrame);
+      root.remove();
+    }, this.fadeMs);
   }
 
   /**
@@ -109,7 +143,13 @@ export class Loader {
    * jump from 40% to 100% still counts up.
    */
   private animateCount(): void {
-    if (!this.count || this.countFrame) return;
+    if (!this.count) return;
+    if (this.reducedMotion) {
+      this.displayed = this.progress * 100;
+      this.count.textContent = String(Math.round(this.displayed)).padStart(2, '0');
+      return;
+    }
+    if (this.countFrame) return;
 
     const step = (): void => {
       this.countFrame = 0;

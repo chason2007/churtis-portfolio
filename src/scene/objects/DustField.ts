@@ -33,6 +33,7 @@ export class DustField {
 
   /** Instances allocated at construction — the ceiling for setCount(). */
   private maxCount = 0;
+  private readonly baseSize = 0.03;
 
   constructor({ count, volume, opacity, theme }: DustFieldOptions) {
     const base = new THREE.PlaneGeometry(1, 1);
@@ -67,7 +68,7 @@ export class DustField {
       fragmentShader: resolveIncludes(fragmentSource),
       uniforms: {
         uTime: { value: 0 },
-        uSize: { value: 0.03 },
+        uSize: { value: this.baseSize },
         uFocus: { value: 9 },
         uAperture: { value: 1.35 },
         uVolume: { value: volume.clone() },
@@ -99,6 +100,11 @@ export class DustField {
    */
   setCount(count: number): void {
     this.geometry.instanceCount = Math.max(0, Math.min(count, this.maxCount));
+  }
+
+  /** Scale sprite size relative to viewport pixel density. */
+  setSizeScale(scale: number): void {
+    this.material.uniforms.uSize.value = this.baseSize * scale;
   }
 
   setFocus(distance: number, aperture?: number): void {

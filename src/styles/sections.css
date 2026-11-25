@@ -47,9 +47,11 @@
 /* ── Shared type ────────────────────────────────────────────────────────────── */
 
 .panel__eyebrow {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.9em;
+  gap: 0.45rem 0.9em;
+  width: 100%;
   margin-bottom: var(--space-xs);
 }
 
@@ -76,6 +78,7 @@
   margin-left: auto;
   color: var(--c-ink-dim);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .panel__title {
@@ -124,7 +127,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75em;
-  padding: 0.5rem 0;
+  min-height: 44px;
+  padding: 0.65rem 0;
   font-size: var(--t-micro);
   font-weight: 600;
   letter-spacing: var(--track-micro);
@@ -133,9 +137,15 @@
   transition: color var(--dur-fast) var(--ease-out-expo);
 }
 
-.details__toggle:hover,
-.details__toggle:focus-visible {
+.details__toggle:focus-visible,
+.details__toggle:active {
   color: var(--c-ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .details__toggle:hover {
+    color: var(--c-ink);
+  }
 }
 
 /* A plus that rotates into a minus. Two pseudo-elements, no icon font. */
@@ -259,8 +269,8 @@
   transition: transform var(--dur-mid) var(--ease-out-expo);
 }
 
-.link:hover::after,
-.link:focus-visible::after {
+.link:focus-visible::after,
+.link:active::after {
   transform: scaleX(1);
 }
 
@@ -268,9 +278,18 @@
   transition: transform var(--dur-mid) var(--ease-out-expo);
 }
 
-.link:hover .link__arrow,
 .link:focus-visible .link__arrow {
   transform: translate(2px, -2px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover::after {
+    transform: scaleX(1);
+  }
+
+  .link:hover .link__arrow {
+    transform: translate(2px, -2px);
+  }
 }
 
 /* ── Skills ─────────────────────────────────────────────────────────────────── */
@@ -331,9 +350,10 @@
 
 .record__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-m);
+  gap: 0.25rem var(--space-m);
 }
 
 .record__title {
@@ -391,6 +411,10 @@
   text-align: center;
 }
 
+.panel--contact .panel__eyebrow {
+  justify-content: center;
+}
+
 .panel--contact .panel__eyebrow::before {
   display: none;
 }
@@ -398,9 +422,10 @@
 .contact__email {
   position: relative;
   align-self: center;
+  max-width: 100%;
   margin-top: var(--space-s);
   font-family: var(--font-display);
-  font-size: clamp(1.125rem, 2.3vw, 2rem);
+  font-size: clamp(1.0625rem, 2.3vw, 2rem);
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--c-ink);
@@ -424,9 +449,15 @@
     transform var(--dur-mid) var(--ease-out-expo);
 }
 
-.contact__email:hover::after,
-.contact__email:focus-visible::after {
+.contact__email:focus-visible::after,
+.contact__email:active::after {
   background: var(--c-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact__email:hover::after {
+    background: var(--c-accent);
+  }
 }
 
 .contact__phone {
@@ -439,9 +470,15 @@
   transition: color var(--dur-fast) var(--ease-out-expo);
 }
 
-.contact__phone:hover,
-.contact__phone:focus-visible {
+.contact__phone:focus-visible,
+.contact__phone:active {
   color: var(--c-ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact__phone:hover {
+    color: var(--c-ink);
+  }
 }
 
 .panel--contact .panel__links {
@@ -457,8 +494,8 @@ html[data-anim='on'] .panel__body > * {
   opacity: 0;
   transform: translateY(14px);
   transition:
-    opacity 760ms var(--ease-out-expo),
-    transform 900ms var(--ease-out-expo);
+    opacity 460ms var(--ease-out-expo),
+    transform 540ms var(--ease-out-expo);
 }
 
 html[data-anim='on'] .panel.is-inview .panel__body > * {
@@ -467,11 +504,11 @@ html[data-anim='on'] .panel.is-inview .panel__body > * {
 }
 
 html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(1) { transition-delay: 0ms; }
-html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(2) { transition-delay: 70ms; }
-html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(3) { transition-delay: 140ms; }
-html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(4) { transition-delay: 210ms; }
-html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(5) { transition-delay: 280ms; }
-html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(n + 6) { transition-delay: 350ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(2) { transition-delay: 45ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(3) { transition-delay: 90ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(4) { transition-delay: 135ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(5) { transition-delay: 180ms; }
+html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(n + 6) { transition-delay: 225ms; }
 
 @media (prefers-reduced-motion: reduce) {
   html[data-anim='on'] .panel__body > * {
@@ -487,20 +524,41 @@ html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(n + 6) { transi
 
 @media (max-width: 60rem) {
   .panel {
-    grid-template-columns: 1fr;
-    padding-block: calc(var(--space-xl) * 1.1);
+    grid-template-columns: minmax(0, 1fr);
+    padding: calc(var(--space-xl) * 1.1) max(var(--gutter), env(safe-area-inset-right))
+      calc(var(--space-xl) * 1.1) max(var(--gutter), env(safe-area-inset-left));
+  }
+
+  .panel:last-of-type {
+    padding-bottom: calc(var(--space-xl) + 4.5rem + env(safe-area-inset-bottom));
   }
 
   .panel[data-side='left'] .panel__body,
   .panel[data-side='right'] .panel__body,
   .panel.panel--contact .panel__body {
     grid-column: 1;
+    width: 100%;
+  }
+
+  /* Soft readability halo when 3D particles pass behind single-column copy. */
+  html[data-mode='3d'] .panel__body {
+    text-shadow:
+      0 1px 12px rgba(5, 6, 7, 0.92),
+      0 0 28px rgba(5, 6, 7, 0.78);
   }
 
   .panel.panel--contact .panel__body {
     align-items: flex-start;
     margin: 0;
     text-align: left;
+  }
+
+  .panel--contact .panel__eyebrow {
+    justify-content: flex-start;
+  }
+
+  .panel--contact .panel__eyebrow::before {
+    display: inline-block;
   }
 
   /* Narrow screens cannot hold the address on one line at the display size. */
@@ -515,7 +573,43 @@ html[data-anim='on'] .panel.is-inview .panel__body > *:nth-child(n + 6) { transi
   }
 
   .skills__group {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-xs);
+  }
+}
+
+/* Touch targets — expand inline links and contact taps to >= 44px without
+   bloating desktop spacing. */
+@media (pointer: coarse), (max-width: 60rem) {
+  .panel__links {
+    gap: 0.25rem var(--space-m);
+    margin-top: var(--space-xs);
+  }
+
+  .link {
+    min-height: 44px;
+    padding-block: 0.65rem;
+  }
+
+  .link::after {
+    bottom: 0.5rem;
+  }
+
+  .contact__email {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-block: 0.35rem;
+  }
+
+  .contact__email::after {
+    bottom: 0.25rem;
+  }
+
+  .contact__phone {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-block: 0.45rem;
   }
 }

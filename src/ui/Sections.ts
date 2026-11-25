@@ -16,13 +16,28 @@ import { el, must } from './dom';
  * the scene, so the 2D layout costs no Three.js.
  */
 
+export interface SectionsOptions {
+  /** Reveal sections closer to the viewport edge in the 2D / mobile layout. */
+  flat?: boolean;
+  /** Called when an expandable panel changes section height. */
+  onLayoutChange?: () => void;
+}
+
 export class Sections {
   /** Section elements in zone order, including the hero. */
   readonly elements: HTMLElement[] = [];
 
   private observer: IntersectionObserver | null = null;
+  private readonly flat: boolean;
+  private readonly onLayoutChange?: () => void;
 
-  constructor(private readonly zones: OutlineEntry[]) {}
+  constructor(
+    private readonly zones: OutlineEntry[],
+    { flat = false, onLayoutChange }: SectionsOptions = {},
+  ) {
+    this.flat = flat;
+    this.onLayoutChange = onLayoutChange;
+  }
 
   render(): HTMLElement[] {
     const main = must('#main');
@@ -80,9 +95,9 @@ export class Sections {
           this.observer?.unobserve(entry.target);
         }
       },
-      // Fire a little before the panel is centred, so the copy has landed by
-      // the time the camera arrives at its zone.
-      { rootMargin: '-15% 0px -25% 0px', threshold: 0 },
+      // Reveal promptly as panels enter the viewport so copy never trails
+      // behind fast scrolling on either desktop or mobile.
+      { rootMargin: this.flat ? '0px 0px -6% 0px' : '-8% 0px -12% 0px', threshold: 0 },
     );
 
     for (const section of this.elements) {
@@ -215,6 +230,7 @@ export class Sections {
       panel.hidden = open;
       const label = toggle.querySelector('.details__label');
       if (label) label.textContent = open ? 'Details' : 'Close';
+      this.onLayoutChange?.();
     });
 
     return el('div', { class: 'details' }, [toggle, panel]);

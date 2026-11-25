@@ -12,21 +12,20 @@ import gsap from 'gsap';
 export type HeroReveal = (parent?: gsap.core.Timeline, position?: number) => gsap.core.Timeline;
 
 export function createHeroReveal(targets: HTMLElement[]): HeroReveal {
-  return (parent, position = 1.5) => {
+  return (parent, position = 0.55) => {
     const timeline = gsap.timeline();
 
     timeline.fromTo(
       targets,
-      { opacity: 0, y: 18, filter: 'blur(6px)' },
+      { opacity: 0, y: 14 },
       {
         opacity: 1,
         y: 0,
-        filter: 'blur(0px)',
-        duration: 1.15,
+        duration: 0.7,
         ease: 'power3.out',
-        stagger: 0.14,
+        stagger: 0.08,
         // Drop the compositor hint once the elements have landed.
-        clearProps: 'willChange,filter',
+        clearProps: 'willChange',
       },
     );
 

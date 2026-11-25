@@ -29,6 +29,7 @@ export class Nav {
 
   /** Nav links, keyed by section id. */
   private readonly links = new Map<string, HTMLAnchorElement>();
+  private list: HTMLUListElement | null = null;
 
   private activeId: string | null = null;
 
@@ -48,6 +49,7 @@ export class Nav {
           class: 'rail__link',
           href: `#${entry.id}`,
           'data-kind': entry.kind,
+          'aria-label': entry.index ? `${entry.index} ${entry.navLabel}` : entry.navLabel,
         },
         [
           el('span', { class: 'rail__label' }, [
@@ -71,7 +73,8 @@ export class Nav {
       return el('li', { class: 'rail__item' }, [link]);
     });
 
-    root.replaceChildren(el('ul', { class: 'rail__list' }, items));
+    this.list = el('ul', { class: 'rail__list' }, items);
+    root.replaceChildren(this.list);
   }
 
   /** Mark one section as current. Idempotent — safe to call every frame. */
@@ -82,12 +85,25 @@ export class Nav {
       this.links.get(this.activeId)?.removeAttribute('aria-current');
     }
 
-    // The hero has no nav entry, so nothing is current while it is on screen.
-    this.links.get(id)?.setAttribute('aria-current', 'true');
-    this.activeId = this.links.has(id) ? id : null;
+    const activeLink = this.links.get(id);
+    activeLink?.setAttribute('aria-current', 'true');
+    this.activeId = activeLink ? id : null;
+
+    // On narrow viewports the bottom rail scrolls horizontally; keep the
+    // active stop centred inside the bar without touching window scroll.
+    if (activeLink && this.list && this.list.scrollWidth > this.list.clientWidth + 1) {
+      const targetLeft =
+        activeLink.offsetLeft - this.list.clientWidth / 2 + activeLink.offsetWidth / 2;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      this.list.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: reduced ? 'auto' : 'smooth',
+      });
+    }
   }
 
   dispose(): void {
     this.links.clear();
+    this.list = null;
   }
 }

@@ -82,12 +82,11 @@ export class ScrollDriver {
     try {
       const { default: Lenis } = await import('lenis');
       this.lenis = new Lenis({
-        // Long and heavy: the camera flight wants weight behind it. Anything
-        // snappier and the path reads as a series of jumps.
-        duration: 1.15,
+        // Smooth enough to read as a camera flight without lagging behind wheel input.
+        duration: 0.68,
         easing: (t) => 1 - Math.pow(1 - t, 3),
         smoothWheel: true,
-        wheelMultiplier: 0.9,
+        wheelMultiplier: 1.05,
         touchMultiplier: 1.6,
       });
       this.lenis.resize();
@@ -123,7 +122,7 @@ export class ScrollDriver {
     // scrollIntoView gets overwritten by its next integration step, which lands
     // the page somewhere else entirely. Route *both* jump kinds through it.
     if (this.lenis) {
-      this.lenis.scrollTo(element, opts.immediate ? { immediate: true } : { duration: 1.5 });
+      this.lenis.scrollTo(element, opts.immediate ? { immediate: true } : { duration: 0.85 });
       return;
     }
 

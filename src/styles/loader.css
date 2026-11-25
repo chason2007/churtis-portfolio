@@ -20,8 +20,8 @@
   /* The loader covers everything, including the hero's own chrome. */
   pointer-events: all;
   transition:
-    opacity 760ms var(--ease-out-expo),
-    visibility 760ms linear;
+    opacity 360ms var(--ease-out-expo),
+    visibility 360ms linear;
 }
 
 .loader__stage {
@@ -38,7 +38,7 @@
   letter-spacing: var(--track-micro);
   text-transform: uppercase;
   color: var(--c-ink-dim);
-  transition: opacity 300ms var(--ease-in-out);
+  transition: opacity 160ms var(--ease-in-out);
 }
 
 .loader__status[data-swap='out'] {
@@ -75,7 +75,8 @@
 .loader__track {
   position: relative;
   height: 1px;
-  margin: 0 var(--gutter) var(--gutter);
+  margin: 0 max(var(--gutter), env(safe-area-inset-right))
+    calc(var(--gutter) + env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
   background: var(--c-line);
   overflow: hidden;
 }
@@ -86,7 +87,7 @@
   background: linear-gradient(90deg, var(--c-accent-sunk), var(--c-accent));
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 420ms var(--ease-out-expo);
+  transition: transform 220ms var(--ease-out-expo);
   will-change: transform;
 }
 
@@ -112,18 +113,42 @@
   opacity: 0;
   transform: translateY(-6px);
   transition:
-    opacity 380ms var(--ease-out-expo),
-    transform 520ms var(--ease-out-expo);
+    opacity 220ms var(--ease-out-expo),
+    transform 260ms var(--ease-out-expo);
 }
 
 .loader[data-state='leaving'] .loader__track {
   opacity: 0;
-  transition: opacity 420ms var(--ease-out-expo) 120ms;
+  transition: opacity 220ms var(--ease-out-expo) 40ms;
 }
 
 .loader[data-state='done'] {
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
+}
+
+/* Mobile / flat mode has no 3D chunk or shader compilation to wait for, so the
+   exit transitions tighten to match the shorter JS hand-off in Loader.ts. */
+html[data-mode='flat'] .loader {
+  transition:
+    opacity 240ms var(--ease-out-expo),
+    visibility 240ms linear;
+}
+
+html[data-mode='flat'] .loader__fill {
+  transition: transform 160ms var(--ease-out-expo);
+}
+
+html[data-mode='flat'] .loader[data-state='leaving'] .loader__status,
+html[data-mode='flat'] .loader[data-state='leaving'] .loader__foot {
+  transition:
+    opacity 160ms var(--ease-out-expo),
+    transform 180ms var(--ease-out-expo);
+}
+
+html[data-mode='flat'] .loader[data-state='leaving'] .loader__track {
+  transition: opacity 160ms var(--ease-out-expo) 20ms;
 }
 
 @media (prefers-reduced-motion: reduce) {

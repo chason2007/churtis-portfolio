@@ -13,17 +13,15 @@
  */
 
 export interface PerfGuardOptions {
-  /** Frames averaged before a verdict. ~1s at 60fps. */
+  /** Frames averaged before a verdict. */
   sampleSize?: number;
   /** Average frame time above which quality steps down, in ms. */
   budgetMs?: number;
   /**
-   * Frames ignored at startup. The first frames include shader compilation and
-   * buffer uploads, and the intro that follows is the heaviest moment in the
-   * whole scene — full particle counts, a wide-open aperture inflating every
-   * sprite, and the bloom flash. Judging on those would downgrade every device.
+   * Seconds ignored at startup while shaders compile and the intro plays,
+   * so high-refresh displays (120Hz) do not finish warmup twice as early.
    */
-  warmupFrames?: number;
+  warmupSeconds?: number;
   /**
    * Consecutive over-budget windows required before stepping down. One bad
    * second is usually something else: a GC pause, a tab coming back to the
@@ -46,7 +44,7 @@ export class PerfGuard {
   private readonly requiredStrikes: number;
   private readonly onDowngrade: (level: number) => void;
 
-  private warmup: number;
+  private warmupRemaining: number;
   private total = 0;
   private frames = 0;
   private level = 0;
@@ -56,17 +54,17 @@ export class PerfGuard {
   private lastAverage = 0;
 
   constructor({
-    sampleSize = 60,
+    sampleSize = 45,
     budgetMs = DEFAULT_BUDGET_MS,
-    // ~5s at 60fps: past the intro, which is the scene's heaviest moment.
-    warmupFrames = 300,
+    // Past the 1.8s intro so shader compilation and the initial flash settle.
+    warmupSeconds = 1.9,
     strikes = 2,
     maxLevel = 3,
     onDowngrade,
   }: PerfGuardOptions) {
     this.sampleSize = sampleSize;
     this.budgetMs = budgetMs;
-    this.warmup = warmupFrames;
+    this.warmupRemaining = warmupSeconds;
     this.requiredStrikes = Math.max(1, strikes);
     this.maxLevel = maxLevel;
     this.onDowngrade = onDowngrade;
@@ -83,13 +81,13 @@ export class PerfGuard {
 
   /** True until enough frames have been seen to say anything useful. */
   get warmingUp(): boolean {
-    return this.warmup > 0 || this.lastAverage === 0;
+    return this.warmupRemaining > 0 || this.lastAverage === 0;
   }
 
   /** Feed one frame's delta, in seconds. */
   sample(delta: number): void {
-    if (this.warmup > 0) {
-      this.warmup -= 1;
+    if (this.warmupRemaining > 0) {
+      this.warmupRemaining -= delta;
       return;
     }
 

@@ -35,6 +35,7 @@ export class CameraRig {
   /** Horizontal world width the camera must keep in frame. */
   private framedWidth = 0;
   private framedDistance = 1;
+  private portraitPullback = 0;
 
   private readonly worldTarget = new THREE.Vector3();
 
@@ -67,6 +68,11 @@ export class CameraRig {
     return this.worldTarget.distanceTo(this.target);
   }
 
+  /** Effective hero distance including any portrait pullback. */
+  get heroDistance(): number {
+    return this.framedDistance + this.portraitPullback;
+  }
+
   update(elapsed: number, pointer: Vec2): void {
     // Parallax is applied in the camera's local space, i.e. relative to
     // wherever the dolly currently sits on the path.
@@ -76,7 +82,7 @@ export class CameraRig {
     this.camera.position.set(
       pointer.x * this.parallax.x + floatX,
       -pointer.y * this.parallax.y + floatY,
-      0,
+      this.portraitPullback,
     );
 
     // lookAt needs world space, and the dolly's matrix may have just moved.
@@ -86,9 +92,17 @@ export class CameraRig {
 
   private applyFov(): void {
     const halfH = Math.atan(this.framedWidth / 2 / this.framedDistance);
-    const vFovRad = 2 * Math.atan(Math.tan(halfH) / Math.max(this.camera.aspect, 0.0001));
+    const aspect = Math.max(this.camera.aspect, 0.0001);
+    const vFovRad = 2 * Math.atan(Math.tan(halfH) / aspect);
     // Clamp: below ~26deg the perspective goes flat, above ~78deg it distorts.
-    this.camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vFovRad), 26, 78);
+    const clampedDeg = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vFovRad), 26, 78);
+    this.camera.fov = clampedDeg;
     this.camera.updateProjectionMatrix();
+
+    // On portrait viewports, 78deg vertical FOV alone clips the wordmark
+    // horizontally; pull back far enough to keep the full width in frame.
+    const clampedHalfV = THREE.MathUtils.degToRad(clampedDeg / 2);
+    const neededDist = this.framedWidth / 2 / (aspect * Math.tan(clampedHalfV));
+    this.portraitPullback = Math.min(Math.max(0, neededDist - this.framedDistance), 18);
   }
 }

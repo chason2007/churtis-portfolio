@@ -20,9 +20,13 @@
 html[data-mode='flat'] body::before {
   content: '';
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100lvh;
   z-index: 0;
   pointer-events: none;
+  transform: translateZ(0);
   background:
     radial-gradient(130% 75% at 50% -15%, rgba(61, 109, 255, 0.16), transparent 62%),
     radial-gradient(90% 60% at 85% 108%, rgba(61, 109, 255, 0.08), transparent 66%);
@@ -36,11 +40,15 @@ html[data-mode='flat'] body::before {
 html[data-mode='flat'] body::after {
   content: '';
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100lvh;
   z-index: 1;
   pointer-events: none;
+  transform: translateZ(0);
   opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ── Hero ───────────────────────────────────────────────────────────────────── */
@@ -54,7 +62,8 @@ html[data-mode='flat'] .hero {
   justify-items: start;
   gap: clamp(1.25rem, 3vh, 2.25rem);
   min-height: 100svh;
-  padding: var(--space-xl) var(--gutter);
+  padding: var(--space-xl) max(var(--gutter), env(safe-area-inset-right)) var(--space-xl)
+    max(var(--gutter), env(safe-area-inset-left));
   text-align: left;
 }
 
@@ -108,7 +117,8 @@ html[data-mode='flat'] .panel {
   min-height: 0;
   grid-template-columns: minmax(0, 1fr);
   justify-items: start;
-  padding-block: clamp(4rem, 11vh, 8rem);
+  padding: clamp(4rem, 11vh, 8rem) max(var(--gutter), env(safe-area-inset-right))
+    clamp(4rem, 11vh, 8rem) max(var(--gutter), env(safe-area-inset-left));
 }
 
 html[data-mode='flat'] .panel::before {
@@ -124,10 +134,15 @@ html[data-mode='flat'] .panel[data-side='left'] .panel__body,
 html[data-mode='flat'] .panel[data-side='right'] .panel__body,
 html[data-mode='flat'] .panel.panel--contact .panel__body {
   grid-column: 1;
+  width: 100%;
   max-width: 54ch;
   margin: 0;
   text-align: left;
   align-items: flex-start;
+}
+
+html[data-mode='flat'] .panel--contact .panel__eyebrow {
+  justify-content: flex-start;
 }
 
 html[data-mode='flat'] .panel--contact .panel__links {
@@ -154,6 +169,24 @@ html[data-mode='flat'] .panel--contact .panel__eyebrow::before {
 /* Give the last panel room to breathe above the rail on narrow screens. */
 html[data-mode='flat'] .panel:last-of-type {
   padding-bottom: clamp(6rem, 14vh, 10rem);
+}
+
+@media (max-width: 60rem) {
+  html[data-mode='flat'] .hero {
+    padding-bottom: calc(var(--space-xl) + 4.5rem + env(safe-area-inset-bottom));
+  }
+
+  html[data-mode='flat'] .panel {
+    padding-block: clamp(2.75rem, 7vh, 5.5rem);
+  }
+
+  html[data-mode='flat'] .panel::before {
+    margin-bottom: clamp(1.75rem, 4.5vh, 3rem);
+  }
+
+  html[data-mode='flat'] .panel:last-of-type {
+    padding-bottom: calc(clamp(3.5rem, 8vh, 6rem) + 4.5rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* ── Chrome ─────────────────────────────────────────────────────────────────── */

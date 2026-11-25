@@ -21,8 +21,12 @@ export class Viewport {
 
   private callbacks = new Set<ResizeFn>();
   private pending = 0;
+  private toolbarTimer = 0;
+  private readonly coarsePointer: boolean;
 
   constructor(private maxPixelRatio: number) {
+    this.coarsePointer =
+      typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
     this.size = this.measure();
     window.addEventListener('resize', this.schedule, { passive: true });
     window.addEventListener('orientationchange', this.schedule, { passive: true });
@@ -42,6 +46,7 @@ export class Viewport {
 
   dispose(): void {
     if (this.pending) cancelAnimationFrame(this.pending);
+    if (this.toolbarTimer) window.clearTimeout(this.toolbarTimer);
     this.callbacks.clear();
     window.removeEventListener('resize', this.schedule);
     window.removeEventListener('orientationchange', this.schedule);
@@ -62,7 +67,31 @@ export class Viewport {
     if (this.pending) return;
     this.pending = requestAnimationFrame(() => {
       this.pending = 0;
-      this.apply(this.measure());
+      const next = this.measure();
+
+      // Mobile toolbars resize innerHeight repeatedly during active touch
+      // scrolling; defer minor height-only updates so render-target reallocation
+      // never stutters a swipe.
+      const toolbarDelta =
+        this.coarsePointer &&
+        next.width === this.size.width &&
+        next.height !== this.size.height &&
+        Math.abs(next.height - this.size.height) < 160;
+
+      if (toolbarDelta) {
+        if (this.toolbarTimer) window.clearTimeout(this.toolbarTimer);
+        this.toolbarTimer = window.setTimeout(() => {
+          this.toolbarTimer = 0;
+          this.apply(this.measure());
+        }, 220);
+        return;
+      }
+
+      if (this.toolbarTimer) {
+        window.clearTimeout(this.toolbarTimer);
+        this.toolbarTimer = 0;
+      }
+      this.apply(next);
     });
   };
 
