@@ -171,7 +171,7 @@ src/
     objects/         NameField, ZoneField, DustField, shapes, the text sampler
     post/            the post-processing chain
   shaders/           GLSL, with a tiny #include resolver (glsl.ts)
-  ui/                DOM-side: Loader, Hero, Sections, Nav, Ambient, Cursor
+  ui/                DOM-side: Loader, Hero, Sections, Nav, Cursor
   styles/            tokens.css first, then base + one sheet per component
   fonts/             self-hosted variable woff2
 ```
@@ -218,10 +218,6 @@ the HTML sits exactly against them at any window size instead of being eyeballed
 only place a threshold means anything); grain and vignette run after it, in display
 space, where film grain behaves like film grain.
 
-**The ambient drone is synthesised, not streamed.** Three oscillators through a swept
-lowpass plus a noise bed — no audio file, no licence, and no seam when it loops. Off by
-default, and the AudioContext is not constructed until asked for.
-
 ### Performance
 
 Target was 60fps on a mid-range laptop. Measured on Intel Iris Xe integrated graphics at
@@ -232,7 +228,7 @@ What keeps it there:
 
 - Everything is instanced; particle counts come from the render budget in
   `core/capabilities.ts`, never hardcoded.
-- Rendering stops entirely when the tab is hidden; the ambient audio context suspends.
+- Rendering stops entirely when the tab is hidden.
 - `core/perf.ts` watches real frame times and steps quality down if the device cannot
   hold the budget: pixel ratio first (the biggest fill-rate lever and the least visible
   on a soft-edged scene), then bloom, then field density. One-way by design —
@@ -268,7 +264,7 @@ All seven steps complete.
 - [x] 3 — Scroll system + camera path through zones, data-driven content overlay
 - [x] 4 — Project zones, quick nav, project detail panels
 - [x] 5 — Reduced-motion / mobile 2D fallback
-- [x] 6 — Audio toggle, custom cursor, transitions, SEO/a11y pass
+- [x] 6 — Custom cursor, transitions, SEO/a11y pass
 - [x] 7 — Performance pass (adaptive quality, profiling) + docs
 
 ### Not yet verified

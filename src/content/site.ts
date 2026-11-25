@@ -124,6 +124,29 @@ export const site: SiteContent = {
         { label: 'GitHub', href: 'https://github.com/chason2007/breakeven' },
       ],
     },
+    {
+      id: 'thelma-hurtis',
+      index: '05',
+      title: 'Thelma Hurtis',
+      subtitle: 'Coaching Practice Website',
+      role: 'Full-Stack Developer',
+      // TODO: add the period, e.g. 'Mar 2026'.
+      blurb:
+        'A production site for a certified life and success coach — practice, pricing and bookings.',
+      body: [
+        'Designed and built the public site for a life and success coaching practice — background, the coaching offer, pricing, and a route for clients to book a session.',
+        'Shipped on a custom domain and running in production.',
+      ],
+      highlights: [
+        'About, Coaching, Pricing and Highlights sections',
+        'Session booking flow',
+        'Custom domain, served behind Cloudflare',
+      ],
+      // TODO: complete the stack — only Next.js and React are confirmed from
+      // the live build.
+      stack: ['Next.js', 'React'],
+      links: [{ label: 'Live', href: 'https://thelmahurtis.com' }],
+    },
     // TODO: add more projects here — everything else updates automatically.
   ],
 
