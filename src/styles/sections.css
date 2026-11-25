@@ -94,16 +94,16 @@
   color: var(--c-ink-mute);
 }
 
+.panel__note {
+  font-size: var(--t-small);
+  color: var(--c-ink-dim);
+}
+
 .panel__copy {
   display: flex;
   flex-direction: column;
   gap: var(--space-s);
   color: var(--c-ink-mute);
-}
-
-.panel__note {
-  font-size: var(--t-small);
-  color: var(--c-ink-dim);
 }
 
 /* ── Details disclosure ─────────────────────────────────────────────────────── */
@@ -310,8 +310,8 @@
    three class-level selectors. Contact is the one panel that ignores the
    alternating layout and centres instead — it is the close. */
 .panel.panel--contact .panel__body {
-  /* Offset one column right of true centre: the funnel arrives from the left
-     and this keeps the availability line clear of its mouth. */
+  /* Offset one column right of true centre, clear of the funnel arriving from
+     the left. */
   grid-column: 4 / span 9;
   align-items: center;
   max-width: 46ch;

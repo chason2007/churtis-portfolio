@@ -284,7 +284,7 @@ export class Sections {
       el('a', { class: 'contact__email', href: `mailto:${site.contact.email}` }, [
         site.contact.email,
       ]),
-      el('p', { class: 'panel__note' }, [site.contact.availability]),
+      el('p', { class: 'panel__note' }, [`Available in ${site.contact.locations.join(' · ')}`]),
       this.buildLinks(site.contact.links, 'panel__links panel__links--contact'),
     ]);
   }

@@ -148,7 +148,7 @@ to a `gh-pages` branch. On a user site (`<user>.github.io`) or a custom domain, 
 - [ ] Add `public/chason-hurtis-resume.pdf`
 - [ ] Replace the `https://chasonhurtis.com` placeholders in `index.html` (canonical +
       OG URLs), `site.ts` (`meta.url`) and `public/robots.txt`
-- [ ] Fill in the GitHub URL and the project links in `site.ts`
+- [ ] Fill in the per-project `links` in `site.ts` (the GitHub profile is set)
 
 ---
 

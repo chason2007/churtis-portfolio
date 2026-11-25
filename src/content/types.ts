@@ -68,7 +68,11 @@ export interface SiteContent {
     heading: string;
     lead: string;
     email: string;
-    availability: string;
+    /**
+     * Where you are available to work. Shown under the email and in the
+     * corner chrome, and used for the Person schema's addresses.
+     */
+    locations: string[];
     links: Link[];
   };
 }

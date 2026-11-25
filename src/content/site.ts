@@ -13,7 +13,7 @@ export const site: SiteContent = {
   meta: {
     title: 'Chason Hurtis — Full-Stack Software Developer',
     description:
-      'Full-stack software developer in Abu Dhabi. Production web apps end to end — Next.js, TypeScript, Azure, MERN. Background in cinematic web: WebGL, GLSL, canvas.',
+      'Full-stack software developer available in Coimbatore, India and Abu Dhabi, UAE. Production web apps end to end — Next.js, TypeScript, Azure, MERN. Background in cinematic web: WebGL, GLSL, canvas.',
     // TODO: replace with your real deployed origin (used for canonical + OG URLs).
     url: 'https://chasonhurtis.com',
     // TODO: drop a 1200x630 PNG at public/og.png (a frame of the hero works well).
@@ -136,12 +136,11 @@ export const site: SiteContent = {
     heading: 'Contact',
     lead: 'Open to full-stack roles and interesting work on the web.',
     email: 'chase.hurtis@gmail.com',
-    availability: 'Available immediately in Abu Dhabi — no visa sponsorship required.',
+    locations: ['Coimbatore, India', 'Abu Dhabi, UAE'],
     links: [
       { label: 'Email', href: 'mailto:chase.hurtis@gmail.com' },
       { label: 'LinkedIn', href: 'https://linkedin.com/in/chasonhurtis-666662328' },
-      // TODO: GitHub profile URL
-      { label: 'GitHub', href: '#', placeholder: true },
+      { label: 'GitHub', href: 'https://github.com/chason2007' },
     ],
   },
 };
