@@ -19,7 +19,6 @@ export const site: SiteContent = {
     description:
       'Software developer and Computer Science student in Coimbatore, India, available in Abu Dhabi, UAE. Full-stack web apps end to end — MERN, Next.js, TypeScript, PostgreSQL.',
     url: 'https://churtis.vercel.app',
-    // TODO: drop a 1200x630 PNG at public/og.png (a frame of the hero works well).
     ogImage: '/og.png',
     locale: 'en',
     author: 'Chason Hurtis',
@@ -115,7 +114,7 @@ export const site: SiteContent = {
       title: 'Freelance Work',
       subtitle: 'Coaching website for Thelma Hurtis',
       role: 'Full-Stack Developer',
-      // TODO: add the period, e.g. 'Mar 2026'.
+      period: 'Sep 2026',
       blurb: 'A production site for a certified life and success coach.',
       body: [
         'Designed and built the public site for a life and success coaching practice — background, the coaching offer, pricing, and a booking flow where clients pick a slot through Cal.com and pay through Stripe.',
