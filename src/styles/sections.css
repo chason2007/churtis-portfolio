@@ -311,9 +311,9 @@
   font-size: var(--t-small);
 }
 
-/* ── Background: education records ──────────────────────────────────────────── */
+/* ── Education records ──────────────────────────────────────────────────────── */
 
-.panel--background .panel__body {
+.panel--education .panel__body {
   max-width: 56ch;
 }
 

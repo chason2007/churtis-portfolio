@@ -7,7 +7,7 @@
  *
  * The shape mirrors the structure of the CV this content is drawn from:
  * a summary, one professional role, a set of projects, skills by group, and
- * education / certifications / languages.
+ * education.
  */
 
 export interface Link {
@@ -54,17 +54,6 @@ export interface EducationEntry {
   details?: string[];
 }
 
-export interface Certification {
-  title: string;
-  issuer: string;
-}
-
-export interface SpokenLanguage {
-  name: string;
-  /** Beginner / Intermediate / Advanced / Proficient / Native. */
-  level: string;
-}
-
 export interface SiteContent {
   meta: {
     title: string;
@@ -91,11 +80,9 @@ export interface SiteContent {
     heading: string;
     groups: SkillGroup[];
   };
-  background: {
+  education: {
     heading: string;
-    education: EducationEntry[];
-    certifications: Certification[];
-    languages: SpokenLanguage[];
+    entries: EducationEntry[];
   };
   contact: {
     heading: string;

@@ -99,8 +99,8 @@ export class Sections {
         return this.buildProject(zone);
       case 'skills':
         return this.buildSkills(zone);
-      case 'background':
-        return this.buildBackground(zone);
+      case 'education':
+        return this.buildEducation(zone);
       case 'contact':
         return this.buildContact(zone);
       default:
@@ -282,17 +282,9 @@ export class Sections {
     ]);
   }
 
-  /**
-   * Education, certifications and spoken languages.
-   *
-   * Three short lists rather than three sections: each is only a couple of
-   * entries, and a zone apiece would stretch the camera path for very little.
-   * They reuse the Skills definition-list styling so the page keeps one rhythm.
-   */
-  private buildBackground(zone: OutlineEntry): HTMLElement {
-    const { education, certifications, languages } = site.background;
-
-    const schooling = education.map((entry) =>
+  /** Education. One record per qualification, newest first. */
+  private buildEducation(zone: OutlineEntry): HTMLElement {
+    const records = site.education.entries.map((entry) =>
       el('div', { class: 'record' }, [
         el('div', { class: 'record__head' }, [
           el('h3', { class: 'record__title' }, [entry.degree]),
@@ -315,35 +307,11 @@ export class Sections {
       ]),
     );
 
-    return this.shell(zone, 'background', [
+    return this.shell(zone, 'education', [
       el('h2', { class: 'panel__eyebrow label', id: `${zone.id}-title` }, [
-        site.background.heading,
+        site.education.heading,
       ]),
-
-      el('div', { class: 'records' }, schooling),
-
-      el('dl', { class: 'skills' }, [
-        el('div', { class: 'skills__group' }, [
-          el('dt', { class: 'skills__label label' }, ['Certifications']),
-          el(
-            'dd',
-            { class: 'skills__items' },
-            certifications.map((item) =>
-              el('span', { class: 'skills__item' }, [`${item.title} — ${item.issuer}`]),
-            ),
-          ),
-        ]),
-        el('div', { class: 'skills__group' }, [
-          el('dt', { class: 'skills__label label' }, ['Languages']),
-          el(
-            'dd',
-            { class: 'skills__items' },
-            languages.map((item) =>
-              el('span', { class: 'skills__item' }, [`${item.name} (${item.level})`]),
-            ),
-          ),
-        ]),
-      ]),
+      el('div', { class: 'records' }, records),
     ]);
   }
 

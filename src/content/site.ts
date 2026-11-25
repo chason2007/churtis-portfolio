@@ -174,9 +174,9 @@ export const site: SiteContent = {
     ],
   },
 
-  background: {
-    heading: 'Background',
-    education: [
+  education: {
+    heading: 'Education',
+    entries: [
       {
         degree: 'Bachelor of Engineering',
         institution: 'Sri Eshwar College of Engineering',
@@ -192,16 +192,6 @@ export const site: SiteContent = {
         period: 'May 2024',
         details: ['UAE Golden Visa recipient — Distinction Student'],
       },
-    ],
-    certifications: [
-      { title: 'Mastering DSA Using C/C++', issuer: 'Udemy' },
-      { title: 'C & C++ Training', issuer: 'IIT Bombay' },
-    ],
-    languages: [
-      { name: 'English', level: 'Proficient' },
-      { name: 'German', level: 'Beginner' },
-      { name: 'Hindi', level: 'Beginner' },
-      { name: 'Tamil', level: 'Beginner' },
     ],
   },
 
