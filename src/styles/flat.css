@@ -134,6 +134,10 @@ html[data-mode='flat'] .panel--contact .panel__links {
   justify-content: flex-start;
 }
 
+html[data-mode='flat'] .contact__phone {
+  align-self: flex-start;
+}
+
 html[data-mode='flat'] .contact__email {
   align-self: flex-start;
   white-space: normal;

@@ -12,7 +12,7 @@ import { site } from './site';
  * and attaches the world-space geometry.
  */
 
-export type ZoneKind = 'hero' | 'about' | 'project' | 'skills' | 'contact';
+export type ZoneKind = 'hero' | 'about' | 'project' | 'skills' | 'background' | 'contact';
 
 export interface OutlineEntry {
   /** DOM anchor id — the section element and the nav link both use it. */
@@ -52,6 +52,7 @@ export function buildOutline(): OutlineEntry[] {
       inNav: true,
     })),
     { id: 'skills', kind: 'skills', navLabel: 'Skills', inNav: true },
+    { id: 'background', kind: 'background', navLabel: 'Background', inNav: true },
     { id: 'contact', kind: 'contact', navLabel: 'Contact', inNav: true },
   ];
 

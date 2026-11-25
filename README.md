@@ -1,5 +1,7 @@
 # Chason Hurtis — Portfolio
 
+Live: **https://churtis.vercel.app**
+
 An immersive 3D developer portfolio. Dark, cinematic, built on Vite + TypeScript +
 Three.js with custom GLSL — and it degrades to a fast, properly designed static page
 when the device or the visitor's preferences call for it.
@@ -146,8 +148,7 @@ to a `gh-pages` branch. On a user site (`<user>.github.io`) or a custom domain, 
 
 - [ ] Add `public/og.png` (1200×630 — a frame of the hero reveal works well)
 - [ ] Add `public/chason-hurtis-resume.pdf`
-- [ ] Replace the `https://chasonhurtis.com` placeholders in `index.html` (canonical +
-      OG URLs), `site.ts` (`meta.url`) and `public/robots.txt`
+- [x] Deployed at https://churtis.vercel.app — canonical, OG and robots.txt all point there
 - [ ] Fill in the per-project `links` in `site.ts` (the GitHub profile is set)
 
 ---

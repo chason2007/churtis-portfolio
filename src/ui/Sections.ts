@@ -99,6 +99,8 @@ export class Sections {
         return this.buildProject(zone);
       case 'skills':
         return this.buildSkills(zone);
+      case 'background':
+        return this.buildBackground(zone);
       case 'contact':
         return this.buildContact(zone);
       default:
@@ -143,6 +145,9 @@ export class Sections {
       el('p', { class: 'panel__eyebrow label' }, [
         el('span', { class: 'numeric panel__index' }, [project.index]),
         el('span', { class: 'panel__role' }, [project.role]),
+        ...(project.period
+          ? [el('span', { class: 'panel__period' }, [project.period])]
+          : []),
       ]),
       el('h2', { class: 'panel__title', id: `${zone.id}-title` }, [project.title]),
       el('p', { class: 'panel__subtitle' }, [project.subtitle]),
@@ -277,6 +282,71 @@ export class Sections {
     ]);
   }
 
+  /**
+   * Education, certifications and spoken languages.
+   *
+   * Three short lists rather than three sections: each is only a couple of
+   * entries, and a zone apiece would stretch the camera path for very little.
+   * They reuse the Skills definition-list styling so the page keeps one rhythm.
+   */
+  private buildBackground(zone: OutlineEntry): HTMLElement {
+    const { education, certifications, languages } = site.background;
+
+    const schooling = education.map((entry) =>
+      el('div', { class: 'record' }, [
+        el('div', { class: 'record__head' }, [
+          el('h3', { class: 'record__title' }, [entry.degree]),
+          el('span', { class: 'record__period label numeric' }, [entry.period]),
+        ]),
+        el('p', { class: 'record__org' }, [
+          entry.institution,
+          ...(entry.location ? [el('span', { class: 'record__where' }, [entry.location])] : []),
+        ]),
+        ...(entry.note ? [el('p', { class: 'record__note' }, [entry.note])] : []),
+        ...(entry.details?.length
+          ? [
+              el(
+                'ul',
+                { class: 'highlights' },
+                entry.details.map((detail) => el('li', {}, [detail])),
+              ),
+            ]
+          : []),
+      ]),
+    );
+
+    return this.shell(zone, 'background', [
+      el('h2', { class: 'panel__eyebrow label', id: `${zone.id}-title` }, [
+        site.background.heading,
+      ]),
+
+      el('div', { class: 'records' }, schooling),
+
+      el('dl', { class: 'skills' }, [
+        el('div', { class: 'skills__group' }, [
+          el('dt', { class: 'skills__label label' }, ['Certifications']),
+          el(
+            'dd',
+            { class: 'skills__items' },
+            certifications.map((item) =>
+              el('span', { class: 'skills__item' }, [`${item.title} — ${item.issuer}`]),
+            ),
+          ),
+        ]),
+        el('div', { class: 'skills__group' }, [
+          el('dt', { class: 'skills__label label' }, ['Languages']),
+          el(
+            'dd',
+            { class: 'skills__items' },
+            languages.map((item) =>
+              el('span', { class: 'skills__item' }, [`${item.name} (${item.level})`]),
+            ),
+          ),
+        ]),
+      ]),
+    ]);
+  }
+
   private buildContact(zone: OutlineEntry): HTMLElement {
     return this.shell(zone, 'contact', [
       el('p', { class: 'panel__eyebrow label' }, [site.contact.heading]),
@@ -284,6 +354,20 @@ export class Sections {
       el('a', { class: 'contact__email', href: `mailto:${site.contact.email}` }, [
         site.contact.email,
       ]),
+      ...(site.contact.phone
+        ? [
+            el(
+              'a',
+              {
+                class: 'contact__phone',
+                // Strip spaces: tel: wants the dialable form, the label keeps
+                // the readable one.
+                href: `tel:${site.contact.phone.replace(/\s+/g, '')}`,
+              },
+              [site.contact.phone],
+            ),
+          ]
+        : []),
       el('p', { class: 'panel__note' }, [`Available in ${site.contact.locations.join(' · ')}`]),
       this.buildLinks(site.contact.links, 'panel__links panel__links--contact'),
     ]);

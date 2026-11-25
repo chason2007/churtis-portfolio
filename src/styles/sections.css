@@ -71,6 +71,13 @@
   color: var(--c-ink-dim);
 }
 
+/* Pushed to the far end of the eyebrow so the dates line up down the page. */
+.panel__period {
+  margin-left: auto;
+  color: var(--c-ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
 .panel__title {
   font-size: var(--t-h2);
   font-weight: 700;
@@ -304,6 +311,71 @@
   font-size: var(--t-small);
 }
 
+/* ── Background: education records ──────────────────────────────────────────── */
+
+.panel--background .panel__body {
+  max-width: 56ch;
+}
+
+.records {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: var(--space-s);
+}
+
+.record {
+  padding: var(--space-s) 0;
+  border-top: 1px solid var(--c-line);
+}
+
+.record__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-m);
+}
+
+.record__title {
+  font-size: var(--t-h3);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
+}
+
+.record__period {
+  flex: none;
+}
+
+.record__org {
+  margin-top: 0.15rem;
+  font-size: var(--t-small);
+  color: var(--c-ink-mute);
+}
+
+/* The place sits after the institution, dimmed, separated by a middle dot. */
+.record__where::before {
+  content: ' · ';
+  color: var(--c-ink-dim);
+}
+
+.record__where {
+  color: var(--c-ink-dim);
+}
+
+.record__note {
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  color: var(--c-ink-dim);
+}
+
+.record .highlights {
+  margin-top: var(--space-xs);
+  font-size: var(--t-small);
+  color: var(--c-ink-mute);
+}
+
 /* ── Contact ────────────────────────────────────────────────────────────────── */
 
 /* Doubled class to out-weigh `.panel[data-side] .panel__body` above, which is
@@ -355,6 +427,21 @@
 .contact__email:hover::after,
 .contact__email:focus-visible::after {
   background: var(--c-accent);
+}
+
+.contact__phone {
+  position: relative;
+  align-self: center;
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--track-label);
+  color: var(--c-ink-mute);
+  transition: color var(--dur-fast) var(--ease-out-expo);
+}
+
+.contact__phone:hover,
+.contact__phone:focus-visible {
+  color: var(--c-ink);
 }
 
 .panel--contact .panel__links {

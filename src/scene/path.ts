@@ -58,6 +58,7 @@ const FIXED_SHAPES: Partial<
 > = {
   about: { shape: 'ring', scale: 3.6 },
   skills: { shape: 'lattice', scale: 3.2 },
+  background: { shape: 'shell', scale: 3.4 },
   contact: { shape: 'funnel', scale: 3.6, laneScale: 2, targetPull: 5 },
 };
 
