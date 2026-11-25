@@ -31,8 +31,6 @@ export const site: SiteContent = {
     tagline: 'Coimbatore, India / Abu Dhabi, UAE',
     ctas: [
       { label: 'View Work', href: '#work' },
-      // TODO: add your PDF at public/chason-hurtis-resume.pdf
-      { label: 'Resume', href: '/chason-hurtis-resume.pdf', placeholder: true },
       { label: 'Contact', href: '#contact' },
     ],
   },

@@ -146,8 +146,7 @@ to a `gh-pages` branch. On a user site (`<user>.github.io`) or a custom domain, 
 
 ### Before you ship
 
-- [ ] Add `public/og.png` (1200×630 — a frame of the hero reveal works well)
-- [ ] Add `public/chason-hurtis-resume.pdf`
+- [x] `public/og.png` — a 1200×630 frame of the settled hero
 - [x] Deployed at https://churtis.vercel.app — canonical, OG and robots.txt all point there
 - [ ] Fill in the per-project `links` in `site.ts` (the GitHub profile is set)
 
