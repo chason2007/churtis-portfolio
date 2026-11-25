@@ -164,19 +164,6 @@ html[data-mode='flat'] .cue {
   display: none;
 }
 
-/*
- * The bottom bar is fixed in 3D mode, where the copy is vertically centred and
- * never reaches it. Here the content flows the whole height of the page, so a
- * fixed bar would sit on top of it. It becomes an ordinary footer instead —
- * which is what it already is in the markup.
- */
-html[data-mode='flat'] .chrome--bottom {
-  position: static;
-  justify-content: flex-start;
-  padding: var(--space-l) var(--gutter) calc(var(--space-xl) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--c-line);
-}
-
 /* Keep the page's own background opaque behind the gradient wash so the fixed
    layers never show through a bounce-scroll overscroll. */
 html[data-mode='flat'] body {

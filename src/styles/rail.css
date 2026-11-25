@@ -5,8 +5,8 @@
  * almost nothing — six hairlines. Hovering the rail, or focusing anything in
  * it, slides the labels in from the right.
  *
- * On narrow screens it becomes a horizontal row along the bottom, where it
- * replaces the location/scroll chrome rather than competing with it.
+ * On narrow screens it becomes a horizontal row along the bottom, taking that
+ * edge over from the scroll cue rather than competing with it.
  */
 
 .rail {
@@ -168,7 +168,7 @@
   }
 
   /* The rail owns the bottom edge now. */
-  .chrome--bottom {
+  .cue {
     display: none;
   }
 }

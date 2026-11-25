@@ -1,40 +1,23 @@
 /*
- * Persistent chrome — the thin bars pinned to the viewport edges.
+ * The scroll cue.
  *
- * These stay fixed for the whole page. Only the bottom bar exists so far; the
- * `--top` modifier returns in step 4 with the quick nav (the
- * two-clicks-to-any-project rule).
+ * All that is left of the page's fixed chrome: a hairline and a word in the
+ * bottom-right corner, pinned to the viewport and retired once the hero is
+ * behind you. The bar it used to live in is gone — it held nothing else.
  */
 
-.chrome {
-  position: fixed;
-  left: 0;
-  right: 0;
-  z-index: var(--z-chrome);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-m);
-  padding: calc(var(--gutter) * 0.75) var(--gutter);
-  pointer-events: none;
-}
-
-.chrome > * {
-  pointer-events: auto;
-}
-
-.chrome--bottom {
-  bottom: 0;
-}
-
-/* ── Scroll cue ─────────────────────────────────────────────────────────────── */
-
 .cue {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(var(--gutter) * 0.75);
+  z-index: var(--z-chrome);
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
   color: var(--c-ink-dim);
-  transition: color var(--dur-fast) var(--ease-out-expo);
+  transition:
+    color var(--dur-fast) var(--ease-out-expo),
+    opacity var(--dur-mid) var(--ease-out-expo);
 }
 
 .cue:hover,
@@ -79,7 +62,6 @@
 html[data-at-top='false'] .cue {
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--dur-mid) var(--ease-out-expo);
 }
 
 /* ── Reduced motion ─────────────────────────────────────────────────────────── */
@@ -90,13 +72,5 @@ html[data-at-top='false'] .cue {
     transform: none;
     height: 100%;
     opacity: 0.4;
-  }
-}
-
-/* Narrow viewports: drop the lower-left location line rather than let the bars
-   wrap into two rows. */
-@media (max-width: 34rem) {
-  .chrome--bottom .chrome__aside {
-    display: none;
   }
 }
