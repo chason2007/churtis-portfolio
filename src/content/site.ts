@@ -118,7 +118,11 @@ export const site: SiteContent = {
       ],
       highlights: ['Breakeven year for any property', 'Total cost of each option, side by side'],
       stack: ['Next.js', 'TypeScript', 'React'],
-      links: [{ label: 'GitHub', href: 'https://github.com/chason2007/breakeven' }],
+      // Live first: a working calculator is a stronger click than the source.
+      links: [
+        { label: 'Live', href: 'https://breakeven-uae.vercel.app' },
+        { label: 'GitHub', href: 'https://github.com/chason2007/breakeven' },
+      ],
     },
     // TODO: add more projects here — everything else updates automatically.
   ],
