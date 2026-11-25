@@ -154,7 +154,9 @@ export class Sections {
       el('p', { class: 'panel__lead' }, [project.blurb]),
       this.buildDetails(project),
       this.buildStack(project.stack),
-      this.buildLinks(project.links, 'panel__links'),
+      // Client work has nothing public to link to. An empty list would still
+      // occupy its margin, so it is left out rather than rendered bare.
+      ...(project.links.length ? [this.buildLinks(project.links, 'panel__links')] : []),
     ];
 
     const section = this.shell(zone, 'project', children);

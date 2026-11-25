@@ -65,12 +65,8 @@ export const site: SiteContent = {
         'Thin PHP JSON API fronting a legacy ERP',
       ],
       stack: ['Next.js', 'TypeScript', 'Azure', 'MySQL', 'PHP'],
-      links: [
-        // TODO: live site URL
-        { label: 'Live', href: '#', placeholder: true },
-        // TODO: case study URL or write-up
-        { label: 'Case study', href: '#', placeholder: true },
-      ],
+      // Client work — nothing public to link to.
+      links: [],
     },
     {
       id: 'sanad',
@@ -92,12 +88,7 @@ export const site: SiteContent = {
         'Stripe billing',
       ],
       stack: ['Next.js', 'TypeScript', 'Supabase', 'PostgreSQL', 'Stripe', 'Anthropic API'],
-      links: [
-        // TODO: GitHub repo URL
-        { label: 'GitHub', href: '#', placeholder: true },
-        // TODO: live demo URL
-        { label: 'Live', href: '#', placeholder: true },
-      ],
+      links: [{ label: 'GitHub', href: 'https://github.com/chason2007/sanad' }],
     },
     {
       id: 'worksync',
@@ -112,12 +103,7 @@ export const site: SiteContent = {
       ],
       highlights: ['Attendance tracking', 'Leave requests', 'Administrative oversight'],
       stack: ['MongoDB', 'Express.js', 'React', 'Node.js'],
-      links: [
-        // TODO: GitHub repo URL
-        { label: 'GitHub', href: '#', placeholder: true },
-        // TODO: live demo URL
-        { label: 'Demo', href: '#', placeholder: true },
-      ],
+      links: [{ label: 'GitHub', href: 'https://github.com/chason2007/worksync' }],
     },
     {
       id: 'breakeven',
@@ -132,12 +118,7 @@ export const site: SiteContent = {
       ],
       highlights: ['Breakeven year for any property', 'Total cost of each option, side by side'],
       stack: ['Next.js', 'TypeScript', 'React'],
-      links: [
-        // TODO: GitHub repo URL
-        { label: 'GitHub', href: '#', placeholder: true },
-        // TODO: live demo URL
-        { label: 'Live', href: '#', placeholder: true },
-      ],
+      links: [{ label: 'GitHub', href: 'https://github.com/chason2007/breakeven' }],
     },
     // TODO: add more projects here — everything else updates automatically.
   ],

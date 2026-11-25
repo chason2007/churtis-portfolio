@@ -76,9 +76,10 @@ shared spine the sections, the nav and the camera path all read.
 Project structures cycle through `PROJECT_SHAPES` in `src/scene/objects/shapes.ts`
 (lattice → shell → helix). Add a shape there to extend the rotation.
 
-Anything still waiting on a real value is marked `placeholder: true` and/or a `// TODO:`
-comment. Placeholder links render visibly disabled rather than sending a recruiter to a
-404. Search the repo for `TODO` to find them all.
+A link with `placeholder: true` renders visibly disabled rather than sending a recruiter
+to a 404 — useful while a URL is still pending. Nothing is currently marked that way.
+A project with no public URL at all takes `links: []`, and the list is omitted entirely
+rather than rendered empty.
 
 #### Hero copy is duplicated on purpose
 
@@ -148,7 +149,7 @@ to a `gh-pages` branch. On a user site (`<user>.github.io`) or a custom domain, 
 
 - [x] `public/og.png` — a 1200×630 frame of the settled hero
 - [x] Deployed at https://churtis.vercel.app — canonical, OG and robots.txt all point there
-- [ ] Fill in the per-project `links` in `site.ts` (the GitHub profile is set)
+- [x] Project links wired up — every link on the site now resolves
 
 ---
 
