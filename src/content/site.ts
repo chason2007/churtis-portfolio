@@ -91,23 +91,8 @@ export const site: SiteContent = {
       links: [{ label: 'GitHub', href: 'https://github.com/chason2007/sanad' }],
     },
     {
-      id: 'worksync',
-      index: '03',
-      title: 'WorkSync',
-      subtitle: 'Employee Management System',
-      role: 'Solo build',
-      period: 'Feb 2026',
-      blurb: 'A MERN system for attendance, leave requests and administrative oversight.',
-      body: [
-        'A comprehensive employee management system streamlining attendance tracking, leave requests, and administrative oversight.',
-      ],
-      highlights: ['Attendance tracking', 'Leave requests', 'Administrative oversight'],
-      stack: ['MongoDB', 'Express.js', 'React', 'Node.js'],
-      links: [{ label: 'GitHub', href: 'https://github.com/chason2007/worksync' }],
-    },
-    {
       id: 'breakeven',
-      index: '04',
+      index: '03',
       title: 'Breakeven',
       subtitle: 'Rent vs Buy Calculator',
       role: 'Solo build',
@@ -125,14 +110,14 @@ export const site: SiteContent = {
       ],
     },
     {
-      id: 'thelma-hurtis',
-      index: '05',
-      title: 'Thelma Hurtis',
-      subtitle: 'Coaching Practice Website',
-      role: 'Full-Stack Developer',
+      id: 'coaching-practice',
+      index: '04',
+      title: 'Coaching Practice',
+      subtitle: 'Freelance Website Build',
+      role: 'Freelance Developer',
       // TODO: add the period, e.g. 'Mar 2026'.
       blurb:
-        'A production site for a certified life and success coach — practice, pricing and bookings.',
+        'My first freelance engagement: a production site for a certified life and success coach.',
       body: [
         'Designed and built the public site for a life and success coaching practice — background, the coaching offer, pricing, and a route for clients to book a session.',
         'Shipped on a custom domain and running in production.',
@@ -146,6 +131,21 @@ export const site: SiteContent = {
       // the live build.
       stack: ['Next.js', 'React'],
       links: [{ label: 'Live', href: 'https://thelmahurtis.com' }],
+    },
+    {
+      id: 'worksync',
+      index: '05',
+      title: 'WorkSync',
+      subtitle: 'Employee Management System',
+      role: 'Solo build',
+      period: 'Feb 2026',
+      blurb: 'A MERN system for attendance, leave requests and administrative oversight.',
+      body: [
+        'A comprehensive employee management system streamlining attendance tracking, leave requests, and administrative oversight.',
+      ],
+      highlights: ['Attendance tracking', 'Leave requests', 'Administrative oversight'],
+      stack: ['MongoDB', 'Express.js', 'React', 'Node.js'],
+      links: [{ label: 'GitHub', href: 'https://github.com/chason2007/worksync' }],
     },
     // TODO: add more projects here — everything else updates automatically.
   ],
