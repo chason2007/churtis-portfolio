@@ -28,7 +28,7 @@ export const site: SiteContent = {
   hero: {
     name: 'CHASON HURTIS',
     role: 'Software Developer',
-    tagline: 'Coimbatore · UAE Golden Visa holder · shipping production web apps end to end.',
+    tagline: 'Coimbatore, India / Abu Dhabi, UAE',
     ctas: [
       { label: 'View Work', href: '#work' },
       // TODO: add your PDF at public/chason-hurtis-resume.pdf
@@ -51,26 +51,27 @@ export const site: SiteContent = {
       id: 'jr-dream',
       index: '01',
       title: 'JR Dream',
-      subtitle: 'PropTech Platform & Internal Tools',
-      role: 'PropTech Engineering Intern',
-      org: 'JR Dream',
+      subtitle: 'Platform & Digital Transformation',
+      role: 'Full-Stack Developer',
       period: 'Dec 2025 – Jan 2026',
       blurb:
-        'Took the company website from static HTML to a full MERN application, and built the internal tools the property teams run on.',
+        'Led a company-wide migration from a static site to a typed Next.js platform on Azure.',
       body: [
-        'Executed a comprehensive UI/UX redesign by transitioning the company website from static HTML to a modern MERN application — setting up the backend, developing the APIs, and setting up the database to improve user engagement.',
-        'Built and maintained property-management applications in PHP, including survey apps, compliance checklist trackers, and an employee database.',
+        'Led migration from a static site to a Next.js + TypeScript + Tailwind platform on Azure Static Web Apps.',
+        'Built a compliant data layer on Azure Database for MySQL, a secure client portal with Microsoft Entra External ID, and a thin PHP JSON API over a legacy ERP.',
       ],
       highlights: [
-        'Static HTML site → a full MERN application',
-        'Backend, REST APIs and database set up from scratch',
-        'PHP survey apps and compliance checklist trackers',
-        'Internal employee database',
+        'Static site → typed, server-rendered platform',
+        'Compliant data layer on Azure Database for MySQL',
+        'Client portal secured with Microsoft Entra External ID',
+        'Thin PHP JSON API fronting a legacy ERP',
       ],
-      stack: ['MongoDB', 'Express', 'React', 'Node', 'PHP'],
+      stack: ['Next.js', 'TypeScript', 'Azure', 'MySQL', 'PHP'],
       links: [
         // TODO: live site URL
         { label: 'Live', href: '#', placeholder: true },
+        // TODO: case study URL or write-up
+        { label: 'Case study', href: '#', placeholder: true },
       ],
     },
     {

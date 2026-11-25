@@ -27,11 +27,6 @@ export interface Project {
   subtitle: string;
   /** Job title for professional work, or how the project was built. */
   role: string;
-  /**
-   * Employer, for professional work. Omitted for personal projects, where the
-   * title already names the thing.
-   */
-  org?: string;
   /** Human-readable period, e.g. "Dec 2025 – Jan 2026". */
   period?: string;
   /** Single-sentence hook shown in the zone as the camera arrives. */
