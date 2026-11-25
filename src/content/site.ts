@@ -118,17 +118,16 @@ export const site: SiteContent = {
       // TODO: add the period, e.g. 'Mar 2026'.
       blurb: 'A production site for a certified life and success coach.',
       body: [
-        'Designed and built the public site for a life and success coaching practice — background, the coaching offer, pricing, and a route for clients to book a session.',
+        'Designed and built the public site for a life and success coaching practice — background, the coaching offer, pricing, and a booking flow where clients pick a slot through Cal.com and pay through Stripe.',
         'My first freelance engagement, shipped on a custom domain and running in production.',
       ],
       highlights: [
         'About, Coaching, Pricing and Highlights sections',
-        'Session booking flow',
+        'Session scheduling via Cal.com',
+        'Payments via Stripe',
         'Custom domain, served behind Cloudflare',
       ],
-      // TODO: complete the stack — only Next.js and React are confirmed from
-      // the live build.
-      stack: ['Next.js', 'React'],
+      stack: ['Next.js', 'React', 'Cal.com', 'Stripe'],
       links: [{ label: 'Live', href: 'https://thelmahurtis.com' }],
     },
     {
