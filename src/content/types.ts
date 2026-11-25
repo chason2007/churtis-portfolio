@@ -50,7 +50,7 @@ export interface SiteContent {
   hero: {
     /** Rendered as particles in 3D, and as a real <h1> for a11y/SEO. */
     name: string;
-    role: string;
+    role?: string;
     tagline: string;
     ctas: Link[];
   };

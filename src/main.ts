@@ -228,7 +228,10 @@ async function boot3D(
   // Scroll drives the camera. Both run off the Experience's ticker so the whole
   // app still has exactly one requestAnimationFrame loop.
   const scroll = new ScrollDriver({ sections });
-  await scroll.enableSmooth();
+  // Smooth scrolling keeps gliding after the wheel stops, which is exactly the
+  // kind of momentum reduced motion is asking us not to add. The camera still
+  // follows the scroll — it just tracks it exactly.
+  if (!capabilities.reducedMotion) await scroll.enableSmooth();
   scroll.on((state) => experience.setScroll(state.t));
   experience.ticker.add((delta) => {
     scroll.raf(performance.now());

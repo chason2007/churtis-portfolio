@@ -37,7 +37,16 @@ export interface RenderBudget {
 
 export interface Capabilities {
   tier: Tier;
-  /** True when the user asked the OS for less motion. */
+  /**
+   * True when the user asked the OS for less motion.
+   *
+   * This no longer forces the 2D layout — the 3D scene is the default on any
+   * capable desktop. It instead suppresses every piece of *autonomous* motion
+   * inside it: the intro cinematic, the idle camera float, pointer parallax,
+   * particle drift and twinkle, and smooth-scroll easing. What remains is
+   * strictly scroll-linked, which is direct manipulation rather than animation.
+   * Anyone who wants the flat page outright can still ask for `?mode=flat`.
+   */
   reducedMotion: boolean;
   /** Coarse pointer / small viewport — drives the 2D layout decision. */
   isMobile: boolean;
@@ -180,9 +189,6 @@ export function detectCapabilities(): Capabilities {
     tier = overrides.tier;
   } else if (overrides.mode === '3d') {
     tier = cores >= 8 ? 'high' : 'medium';
-  } else if (reducedMotion) {
-    // Reduced motion gets the static 2D version — same content, no camera flight.
-    tier = 'none';
   } else if (isMobile) {
     // Phones get the 2D layout rather than a compromised 3D scene. Changing this
     // to `tier = 'low'` is all it takes to opt mobiles into the 3D scene.

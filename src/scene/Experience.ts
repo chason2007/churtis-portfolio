@@ -98,6 +98,14 @@ export class Experience {
   private zoneFields: ZoneField[] = [];
 
   private firstFrameSent = false;
+
+  /**
+   * When the visitor asked for less motion, the scene still renders in full —
+   * it just stops moving on its own. Everything that remains is driven
+   * directly by the scroll position.
+   */
+  private readonly reducedMotion: boolean;
+
   private readonly perf: PerfGuard;
   private readonly stats: StatsReadout | null;
 
@@ -125,6 +133,7 @@ export class Experience {
     this.capabilities = capabilities;
     this.onFirstFrame = onFirstFrame;
     this.onFraming = onFraming;
+    this.reducedMotion = capabilities.reducedMotion;
 
     // Created eagerly so `main.ts` can hang the scroll driver off the same
     // loop before the scene finishes building. One rAF for the whole app.
@@ -195,6 +204,13 @@ export class Experience {
 
     this.rig = new CameraRig({ size: this.viewport.size });
     this.rig.frameWidth(FRAME_WORLD_WIDTH, HERO_DISTANCE);
+
+    if (this.reducedMotion) {
+      // Both are autonomous: the float moves with no input at all, and the
+      // parallax keeps gliding after the pointer has stopped.
+      this.rig.idleAmplitude = 0;
+      this.rig.parallax.set(0, 0);
+    }
     this.scene.add(this.rig.dolly);
 
     this.nameField = this.disposer.add(
@@ -284,6 +300,17 @@ export class Experience {
    */
   playIntro(): gsap.core.Timeline {
     const timeline = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+    if (this.reducedMotion) {
+      // Cut straight to the settled frame. Still a timeline, so callers that
+      // nest things into it do not have to branch.
+      this.composer.setExposure(1);
+      this.composer.setBloomStrength(BLOOM_REST);
+      this.introOffset.z = 0;
+      this.nameField.progress = 1;
+      this.lens.aperture = APERTURE_SHARP;
+      return timeline;
+    }
 
     // Tweened through proxy objects so the Composer keeps a narrow API and
     // nothing outside this class pokes at uniforms directly.
@@ -388,20 +415,27 @@ export class Experience {
     this.applyPath();
     this.rig.update(elapsed, this.pointer.smooth);
 
+    // Every autonomous movement in the shaders — drift, swirl, twinkle, the
+    // dust's slow fall — is a function of this clock. Freezing it stops all of
+    // them at once, with no shader changes and no per-effect flags, while the
+    // scroll-driven assembly and camera path keep working normally.
+    const sceneTime = this.reducedMotion ? 0 : elapsed;
+    const spin = this.reducedMotion ? 0 : delta;
+
     // One place writes focus into the shaders, every frame, whatever moved it.
     const focus = this.rig.focusDistance;
     const { x, y } = this.pointer.smooth;
 
     this.nameField.setFocus(focus, this.lens.aperture);
-    this.nameField.update(elapsed, x, y);
+    this.nameField.update(sceneTime, x, y);
 
     this.rig.camera.getWorldPosition(this.cameraWorld);
     this.dustField.setFocus(focus, this.lens.aperture);
-    this.dustField.update(elapsed, x, y, this.cameraWorld);
+    this.dustField.update(sceneTime, x, y, this.cameraWorld);
 
     for (const field of this.zoneFields) {
       field.setFocus(focus, this.lens.aperture);
-      field.update(delta, elapsed, x, y);
+      field.update(spin, sceneTime, x, y);
     }
 
     this.composer.render(delta, elapsed);
